@@ -20,6 +20,7 @@ package be.benvd.mvforandroid;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 
@@ -28,6 +29,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 	private Preference autoCreditPreference;
 	private Preference autoUsagePreference;
 	private Preference autoTopupsPreference;
+	private Preference updateFrequencyPreference;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,10 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 		autoCreditPreference = getPreferenceScreen().findPreference("auto_credit");
 		autoUsagePreference = getPreferenceScreen().findPreference("auto_usage");
 		autoTopupsPreference = getPreferenceScreen().findPreference("auto_topups");
+
+		updateFrequencyPreference = getPreferenceScreen().findPreference("update_frequency");
+		updateFrequencyPreference.setSummary(getString(R.string.settings_frequency,
+				((ListPreference) updateFrequencyPreference).getEntry()));
 	}
 
 	@Override
@@ -67,7 +73,9 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 			autoTopupsPreference
 					.setSummary(sharedPreferences.getBoolean(key, false) ? getString(R.string.settings_auto_topups_enabled)
 							: getString(R.string.settings_auto_topups_disabled));
-		} else {
+		} else if (key.equals("update_frequency")) {
+			updateFrequencyPreference.setSummary(getString(R.string.settings_frequency,
+					((ListPreference) updateFrequencyPreference).getEntry()));
 		}
 	}
 

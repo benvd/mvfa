@@ -17,11 +17,12 @@
 	<PreferenceCategory
 		android:title="@string/auto_update" />
 
-	<EditTextPreference
+	<ListPreference
+		android:title="@string/auto_update_frequency"
 		android:key="update_frequency"
-		android:title="Update frequency"
-		android:defaultValue="5000"
-		android:numeric="integer" />
+		android:defaultValue="86400000"
+		android:entries="@array/update_frequency_entries"
+		android:entryValues="@array/update_frequency_values" />
 
 	<CheckBoxPreference
 		android:key="auto_credit"

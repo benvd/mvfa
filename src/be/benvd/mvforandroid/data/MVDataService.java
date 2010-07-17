@@ -99,8 +99,9 @@ public class MVDataService extends WakefulIntentService {
 	 * Schedules the next execution of doWakefulWork, using the frequency specified in the Preferences.
 	 */
 	private void scheduleNextUpdate() {
-		alarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()
-				+ Long.parseLong(prefs.getString("update_frequency", "5000")), wakefulWorkIntent);
+		long delay = Long.parseLong(prefs.getString("update_frequency", "86400000"));
+		alarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + delay, wakefulWorkIntent);
+		Log.d("MVDataService", "Scheduled update in " + delay + "ms.");
 	}
 
 	/**
@@ -122,43 +123,51 @@ public class MVDataService extends WakefulIntentService {
 	@Override
 	protected void doWakefulWork(Intent intent) {
 		if (intent.getAction().equals(UPDATE_ACTION)) {
-			Log.i("MVFA", "Doing wakeful work");
-
 			try {
-				if (prefs.getBoolean("auto_credit", false)) {
-					String response = getTestResponse(URL_CREDIT);
-					helper.credit.update(new JSONObject(response));
-					sendBroadcast(creditBroadcast);
-					Log.i("MVFA", "Updated credit");
-				}
-
-				if (prefs.getBoolean("auto_usage", false)) {
-					String response = getTestResponse(URL_USAGE);
-					helper.usage.update(new JSONArray(response), false);
-					sendBroadcast(usageBroadcast);
-					Log.i("MVFA", "Updated usage");
-				}
-
-				if (prefs.getBoolean("auto_topups", false)) {
-					String response = getTestResponse(URL_TOPUPS);
-					helper.topups.update(new JSONArray(response), false);
-					sendBroadcast(topupsBroadcast);
-					Log.i("MVFA", "Updated topups");
-				}
+				updateCredit();
+				updateUsage();
+				updateTopups();
 			} catch (ClientProtocolException e) {
-				Log.e("MVFA", "Exception in doWakefulWork", e);
+				Log.e("MVDataService", "Exception in doWakefulWork", e);
 				retry();
 			} catch (IOException e) {
-				Log.e("MVFA", "Exception in doWakefulWork", e);
+				Log.e("MVDataService", "Exception in doWakefulWork", e);
 				retry();
 			} catch (JSONException e) {
-				Log.e("MVFA", "Exception in doWakefulWork", e);
+				Log.e("MVDataService", "Exception in doWakefulWork", e);
 				retry();
 			} finally {
 				helper.close();
 			}
 
 			scheduleNextUpdate();
+		}
+	}
+
+	private void updateCredit() throws ClientProtocolException, IOException, JSONException {
+		if (prefs.getBoolean("auto_credit", false)) {
+			String response = getTestResponse(URL_CREDIT);
+			helper.credit.update(new JSONObject(response));
+			sendBroadcast(creditBroadcast);
+			Log.i("MVDataService", "Updated credit");
+		}
+	}
+
+	private void updateUsage() throws ClientProtocolException, IOException, JSONException {
+		if (prefs.getBoolean("auto_usage", false)) {
+			String response = getTestResponse(URL_USAGE);
+			helper.usage.update(new JSONArray(response), false);
+			sendBroadcast(usageBroadcast);
+			Log.i("MVDataService", "Updated usage");
+		}
+	}
+
+	private void updateTopups() throws ClientProtocolException, IOException, JSONException {
+		if (prefs.getBoolean("auto_topups", false)) {
+			String response = getTestResponse(URL_TOPUPS);
+			helper.topups.update(new JSONArray(response), false);
+			sendBroadcast(topupsBroadcast);
+			Log.i("MVDataService", "Updated topups");
 		}
 	}
 

@@ -9,27 +9,32 @@
 		name="usage">Usage</string>
 	<string
 		name="topups">Top-ups</string>
-		
-		
+
+
 	<!-- SETTINGS -->
-		
+
 	<string
 		name="auto_update">Auto Update</string>
 
 	<string
-		name="settings_auto_credit_enabled">Credit info will be automatically updated.</string>
+		name="auto_update_frequency">Frequency</string>
+
 	<string
-		name="settings_auto_credit_disabled">Credit info will not be automatically updated.</string>
+		name="settings_frequency">Application will update every %s.</string>
 	<string
-		name="settings_auto_usage_enabled">Usage info for the present day will be automatically updated.</string>
+		name="settings_auto_credit_enabled">Credit info will be updated.</string>
 	<string
-		name="settings_auto_usage_disabled">Usage info for the present day will not be automatically updated.</string>
+		name="settings_auto_credit_disabled">Credit info will not be updated.</string>
 	<string
-		name="settings_auto_topups_enabled">Top-up info will be automatically updated.</string>
+		name="settings_auto_usage_enabled">Usage info for the present day will be updated.</string>
 	<string
-		name="settings_auto_topups_disabled">Top-up info will not be automatically updated.</string>
-		
-	
+		name="settings_auto_usage_disabled">Usage info for the present day will not be updated.</string>
+	<string
+		name="settings_auto_topups_enabled">Top-up info will be updated.</string>
+	<string
+		name="settings_auto_topups_disabled">Top-up info will not be updated.</string>
+
+
 	<!--  -->
-		
+
 </resources>
