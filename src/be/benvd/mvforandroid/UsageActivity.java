@@ -18,7 +18,10 @@
 package be.benvd.mvforandroid;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -28,53 +31,81 @@ import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import be.benvd.mvforandroid.data.DatabaseHelper;
+import be.benvd.mvforandroid.data.MVDataService;
 
-public class HistoryActivity extends Activity {
+public class UsageActivity extends Activity {
 
 	public DatabaseHelper helper;
+	private Cursor model;
+
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			model.requery();
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.history);
+		setContentView(R.layout.usage);
 
 		helper = new DatabaseHelper(this);
 
-		ListView historyList = (ListView) findViewById(R.id.history_list);
-		// historyList.setAdapter();
+		ListView usageList = (ListView) findViewById(R.id.usage_list);
+		model = helper.usage.getAll();
+		usageList.setAdapter(new UsageAdapter(model));
 	}
 
-	static class HistoryHolder {
+	@Override
+	protected void onResume() {
+		super.onResume();
+		registerReceiver(receiver, new IntentFilter(MVDataService.USAGE_UPDATED));
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		unregisterReceiver(receiver);
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		helper.close();
+	}
+
+	static class UsageHolder {
 		private TextView contact = null;
 
-		HistoryHolder(View listItem) {
+		UsageHolder(View listItem) {
 			contact = (TextView) listItem.findViewById(R.id.contact);
 		}
 
 		void populateFrom(Cursor c, DatabaseHelper helper) {
-			contact.setText(helper.history.getContact(c));
+			contact.setText(helper.usage.getContact(c));
 		}
 	}
 
-	class HistoryAdapter extends CursorAdapter {
-		HistoryAdapter(Cursor c) {
-			super(HistoryActivity.this, c);
+	class UsageAdapter extends CursorAdapter {
+		UsageAdapter(Cursor c) {
+			super(UsageActivity.this, c);
 		}
 
 		@Override
 		public void bindView(View row, Context ctxt, Cursor c) {
-			HistoryHolder holder = (HistoryHolder) row.getTag();
+			UsageHolder holder = (UsageHolder) row.getTag();
 			holder.populateFrom(c, helper);
 		}
 
 		@Override
 		public View newView(Context ctxt, Cursor c, ViewGroup parent) {
 			LayoutInflater inflater = getLayoutInflater();
-			View listItem = inflater.inflate(R.layout.history_list_item, parent, false);
-			HistoryHolder holder = new HistoryHolder(listItem);
+			View listItem = inflater.inflate(R.layout.usage_list_item, parent, false);
+			UsageHolder holder = new UsageHolder(listItem);
 			listItem.setTag(holder);
-			return (listItem);
+			return listItem;
 		}
 	}
 

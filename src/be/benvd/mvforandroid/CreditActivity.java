@@ -17,26 +17,71 @@
 
 package be.benvd.mvforandroid;
 
-import be.benvd.mvforandroid.data.DatabaseHelper;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.widget.TextView;
+import be.benvd.mvforandroid.data.DatabaseHelper;
+import be.benvd.mvforandroid.data.MVDataService;
 
 public class CreditActivity extends Activity {
 
 	private DatabaseHelper helper;
 
+	/**
+	 * Callback for the MVDataService.
+	 */
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			updateView();
+		}
+	};
+
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState) { 
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.credit);
 
 		helper = new DatabaseHelper(this);
 
-		TextView creditText = (TextView) findViewById(R.id.credit_text);
-		creditText.setText(helper.credit.getRemainingSms());
+		updateView();
+	}
 
+	private void updateView() {
+		TextView creditText = (TextView) findViewById(R.id.credit_text);
+		creditText.setText(helper.credit.getRemainingCredit() + " EUR remaining");
+
+		TextView smsText = (TextView) findViewById(R.id.sms_text);
+		smsText.setText(helper.credit.getRemainingSms() + " SMS remaining");
+
+		TextView dataText = (TextView) findViewById(R.id.data_text);
+		dataText.setText(helper.credit.getRemainingData() + " bytes remaining");
+
+		TextView validText = (TextView) findViewById(R.id.valid_text);
+		validText.setText("Valid until " + helper.credit.getValidUntil());
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		registerReceiver(receiver, new IntentFilter(MVDataService.CREDIT_UPDATED));
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		unregisterReceiver(receiver);
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		helper.close();
 	}
 
 }

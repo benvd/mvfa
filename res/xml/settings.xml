@@ -2,12 +2,6 @@
 <PreferenceScreen
 	xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<EditTextPreference
-		android:key="update_frequency"
-		android:title="Update frequency"
-		android:defaultValue="5000"
-		android:numeric="integer" />
-
 	<PreferenceCategory
 		android:title="Credentials" />
 
@@ -19,5 +13,32 @@
 		android:key="password"
 		android:title="Password"
 		android:password="true" />
+
+	<PreferenceCategory
+		android:title="@string/auto_update" />
+
+	<EditTextPreference
+		android:key="update_frequency"
+		android:title="Update frequency"
+		android:defaultValue="5000"
+		android:numeric="integer" />
+
+	<CheckBoxPreference
+		android:key="auto_credit"
+		android:title="@string/credit"
+		android:summary="@string/settings_auto_credit_disabled"
+		android:defaultValue="false" />
+
+	<CheckBoxPreference
+		android:key="auto_usage"
+		android:title="@string/usage"
+		android:summary="@string/settings_auto_usage_disabled"
+		android:defaultValue="false" />
+
+	<CheckBoxPreference
+		android:key="auto_topups"
+		android:title="@string/topups"
+		android:summary="@string/settings_auto_topups_disabled"
+		android:defaultValue="false" />
 
 </PreferenceScreen>

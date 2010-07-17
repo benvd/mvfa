@@ -6,7 +6,30 @@
 	<string
 		name="credit">Credit</string>
 	<string
-		name="history">History</string>
+		name="usage">Usage</string>
 	<string
-		name="topups">Topups</string>
+		name="topups">Top-ups</string>
+		
+		
+	<!-- SETTINGS -->
+		
+	<string
+		name="auto_update">Auto Update</string>
+
+	<string
+		name="settings_auto_credit_enabled">Credit info will be automatically updated.</string>
+	<string
+		name="settings_auto_credit_disabled">Credit info will not be automatically updated.</string>
+	<string
+		name="settings_auto_usage_enabled">Usage info for the present day will be automatically updated.</string>
+	<string
+		name="settings_auto_usage_disabled">Usage info for the present day will not be automatically updated.</string>
+	<string
+		name="settings_auto_topups_enabled">Top-up info will be automatically updated.</string>
+	<string
+		name="settings_auto_topups_disabled">Top-up info will not be automatically updated.</string>
+		
+	
+	<!--  -->
+		
 </resources>

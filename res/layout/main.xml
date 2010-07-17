@@ -17,8 +17,8 @@
 
 		<Button
 			style="@style/MainButton"
-			android:id="@+id/history_button"
-			android:text="@string/history" />
+			android:id="@+id/usage_button"
+			android:text="@string/usage" />
 
 		<Button
 			style="@style/MainButton"

@@ -17,15 +17,58 @@
 
 package be.benvd.mvforandroid;
 
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
+
+	private Preference autoCreditPreference;
+	private Preference autoUsagePreference;
+	private Preference autoTopupsPreference;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.settings);
+
+		autoCreditPreference = getPreferenceScreen().findPreference("auto_credit");
+		autoUsagePreference = getPreferenceScreen().findPreference("auto_usage");
+		autoTopupsPreference = getPreferenceScreen().findPreference("auto_topups");
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+	}
+
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		if (key.equals("auto_credit")) {
+			autoCreditPreference
+					.setSummary(sharedPreferences.getBoolean(key, false) ? getString(R.string.settings_auto_credit_enabled)
+							: getString(R.string.settings_auto_credit_disabled));
+		} else if (key.equals("auto_usage")) {
+			sharedPreferences.getBoolean(key, false);
+			autoUsagePreference
+					.setSummary(sharedPreferences.getBoolean(key, false) ? getString(R.string.settings_auto_usage_enabled)
+							: getString(R.string.settings_auto_usage_disabled));
+		} else if (key.equals("auto_topups")) {
+			sharedPreferences.getBoolean(key, false);
+			autoTopupsPreference
+					.setSummary(sharedPreferences.getBoolean(key, false) ? getString(R.string.settings_auto_topups_enabled)
+							: getString(R.string.settings_auto_topups_disabled));
+		} else {
+		}
 	}
 
 }

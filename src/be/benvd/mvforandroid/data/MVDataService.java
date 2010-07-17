@@ -27,6 +27,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,14 +46,21 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class MVDataService extends WakefulIntentService {
 
-	public static final String UPDATE = "be.benvd.mvforandroid.data.Updated";
-	public static final String UPDATE_ACTION = "be.benvd.mvforandroid.data.Update";
-
-	private final String URL_HISTORY = "https://mobilevikings.com/api/2.0/basic/usage.json";
+	private final String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json";
 	private final String URL_CREDIT = "https://mobilevikings.com/api/2.0/basic/sim_balance.json";
 	private final String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
 
-	private Intent broadcast = new Intent(UPDATE);
+	private static final long RETRY_TIMEOUT = 30000;
+
+	public static final String UPDATE_ACTION = "be.benvd.mvforandroid.data.Update";
+	public static final String CREDIT_UPDATED = "be.benvd.mvforandroid.data.CreditUpdated";
+	public static final String USAGE_UPDATED = "be.benvd.mvforandroid.data.UsageUpdated";
+	public static final String TOPUPS_UPDATED = "be.benvd.mvforandroid.data.TopupsUpdated";
+
+	private Intent creditBroadcast = new Intent(CREDIT_UPDATED);
+	private Intent usageBroadcast = new Intent(USAGE_UPDATED);
+	private Intent topupsBroadcast = new Intent(TOPUPS_UPDATED);
+
 	private IBinder binder;
 	private AlarmManager alarm = null;
 	private PendingIntent wakefulWorkIntent = null;
@@ -87,9 +95,20 @@ public class MVDataService extends WakefulIntentService {
 		scheduleNextUpdate();
 	}
 
+	/**
+	 * Schedules the next execution of doWakefulWork, using the frequency specified in the Preferences.
+	 */
 	private void scheduleNextUpdate() {
 		alarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()
-				+ Long.parseLong(prefs.getString("update_frequency", "60000")), wakefulWorkIntent);
+				+ Long.parseLong(prefs.getString("update_frequency", "5000")), wakefulWorkIntent);
+	}
+
+	/**
+	 * Schedules the next execution of doWakefulWork using RETRY_TIMEOUT.
+	 */
+	private void retry() {
+		alarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + RETRY_TIMEOUT,
+				wakefulWorkIntent);
 	}
 
 	@Override
@@ -105,27 +124,41 @@ public class MVDataService extends WakefulIntentService {
 		if (intent.getAction().equals(UPDATE_ACTION)) {
 			Log.i("MVFA", "Doing wakeful work");
 
-			// TODO Have preferences to decide which of the url's should be updated.
-
 			try {
-				// TODO Fake response, to spare MV servers (and avoid throttling).
-				String response = getResponse(URL_CREDIT);
-				helper.credit.update(new JSONObject(response));
+				if (prefs.getBoolean("auto_credit", false)) {
+					String response = getTestResponse(URL_CREDIT);
+					helper.credit.update(new JSONObject(response));
+					sendBroadcast(creditBroadcast);
+					Log.i("MVFA", "Updated credit");
+				}
+
+				if (prefs.getBoolean("auto_usage", false)) {
+					String response = getTestResponse(URL_USAGE);
+					helper.usage.update(new JSONArray(response), false);
+					sendBroadcast(usageBroadcast);
+					Log.i("MVFA", "Updated usage");
+				}
+
+				if (prefs.getBoolean("auto_topups", false)) {
+					String response = getTestResponse(URL_TOPUPS);
+					helper.topups.update(new JSONArray(response), false);
+					sendBroadcast(topupsBroadcast);
+					Log.i("MVFA", "Updated topups");
+				}
 			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
 				Log.e("MVFA", "Exception in doWakefulWork", e);
+				retry();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				Log.e("MVFA", "Exception in doWakefulWork", e);
+				retry();
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				Log.e("MVFA", "Exception in doWakefulWork", e);
+				retry();
+			} finally {
+				helper.close();
 			}
 
-			// TODO Should something go wrong during the update, reschedule after a short while.
-
 			scheduleNextUpdate();
-			sendBroadcast(broadcast);
 		}
 	}
 
@@ -161,6 +194,26 @@ public class MVDataService extends WakefulIntentService {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns fake data.
+	 */
+	private String getTestResponse(String url) throws ClientProtocolException, IOException {
+		if (url.equals(URL_CREDIT)) {
+			return "{\"valid_until\": \"2010-07-21 21:38:00\", \"sms\": " + getRandom(1000) + ", \"data\": "
+					+ getRandom(1073741824) + ", \"is_expired\": false, \"credits\": \"" + getRandom(40) + ".37\"}";
+		} else if (url.equals(URL_USAGE)) {
+			return "[    {        \"is_data\": true,         \"start_timestamp\": \"2010-07-17 11:21:16\",         \"balance\": \"8.100000\",         \"duration_call\": 9,         \"to\": \"web.be\",         \"is_sms\": false,         \"timestamp\": 1279358476,         \"price\": \"0.000000\",         \"duration_connection\": 3004,         \"duration_human\": \"50:04\",         \"is_incoming\": false,         \"is_voice\": false,         \"is_mms\": false,         \"end_timestamp\": \"2010-07-17 11:21:25\"    },     {        \"is_data\": false,         \"start_timestamp\": \"2010-07-17 03:25:08\",         \"balance\": \"8.100000\",         \"duration_call\": 22,         \"to\": \"0498441877\",         \"is_sms\": false,         \"timestamp\": 1279329908,         \"price\": \"0.240000\",         \"duration_connection\": 11,         \"duration_human\": \"0:11\",         \"is_incoming\": false,         \"is_voice\": true,         \"is_mms\": false,         \"end_timestamp\": \"2010-07-17 03:25:30\"    },     {        \"is_data\": false,         \"start_timestamp\": \"2010-07-17 03:09:58\",         \"balance\": \"8.340000\",         \"duration_call\": 2,         \"to\": \"0498441877\",         \"is_sms\": true,         \"timestamp\": 1279328998,         \"price\": \"0.000000\",         \"duration_connection\": 1,         \"duration_human\": \"0:01\",         \"is_incoming\": false,         \"is_voice\": false,         \"is_mms\": false,         \"end_timestamp\": \"2010-07-17 03:10:00\"    },     {        \"is_data\": false,         \"start_timestamp\": \"2010-07-17 03:05:03\",         \"balance\": \"8.340000\",         \"duration_call\": 1,         \"to\": \"0498441877\",         \"is_sms\": true,         \"timestamp\": 1279328703,         \"price\": \"0.000000\",         \"duration_connection\": 1,         \"duration_human\": \"0:01\",         \"is_incoming\": false,         \"is_voice\": false,         \"is_mms\": false,         \"end_timestamp\": \"2010-07-17 03:05:04\"    },     {        \"is_data\": false,         \"start_timestamp\": \"2010-07-17 03:04:41\",         \"balance\": \"0.000000\",         \"duration_call\": 1,         \"to\": \"0498441877\",         \"is_sms\": true,         \"timestamp\": 1279328681,         \"price\": \"0.000000\",         \"duration_connection\": 1,         \"duration_human\": \"0:01\",         \"is_incoming\": true,         \"is_voice\": false,         \"is_mms\": false,         \"end_timestamp\": \"2010-07-17 03:04:42\"    },     {        \"is_data\": false,         \"start_timestamp\": \"2010-07-17 03:04:04\",         \"balance\": \"8.340000\",         \"duration_call\": 2,         \"to\": \"0498441877\",         \"is_sms\": true,         \"timestamp\": 1279328644,         \"price\": \"0.000000\",         \"duration_connection\": 1,         \"duration_human\": \"0:01\",         \"is_incoming\": false,         \"is_voice\": false,         \"is_mms\": false,         \"end_timestamp\": \"2010-07-17 03:04:06\"    }]";
+		} else if (url.equals(URL_TOPUPS)) {
+			return "[    {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-06-21 21:38:33\",         \"method\": \"Ogone\",         \"payment_received_on\": \"2010-06-21 21:38:32\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-05-01 11:28:36\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2010-05-01 11:24:01\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-03-17 19:07:46\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2010-03-17 19:07:41\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-02-15 12:42:52\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2010-02-15 12:42:40\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-01-07 14:49:00\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2010-01-07 14:48:51\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-12-04 00:45:43\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-12-04 00:45:30\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-10-28 10:23:30\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-10-28 10:23:17\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-09-28 08:03:00\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-09-28 08:03:00\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-08-27 22:35:39\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-08-27 22:35:39\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-07-27 13:17:45\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-07-27 13:17:45\"    }]";
+		} else {
+			return "";
+		}
+	}
+
+	private int getRandom(int to) {
+		return (int) Math.floor(Math.random() * to);
 	}
 
 }

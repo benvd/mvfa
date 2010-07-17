@@ -51,18 +51,6 @@ public class MainActivity extends Activity {
 		}
 	};
 
-	// XXX Service callback snippet, combine with: registerReceiver(receiver,
-	// new IntentFilter(MVDataService.UPDATE)) in onResume and
-	// unregisterReceiver(receiver) in onPause
-	// **
-	// * Callback for the MVDataService.
-	// */
-	// private BroadcastReceiver receiver = new BroadcastReceiver() {
-	// @Override
-	// public void onReceive(Context context, Intent intent) {
-	// }
-	// };
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -72,11 +60,11 @@ public class MainActivity extends Activity {
 		bindService(new Intent(this, MVDataService.class), onService, BIND_AUTO_CREATE);
 
 		// Setting up UI
-		Button historyButton = (Button) findViewById(R.id.history_button);
-		historyButton.setOnClickListener(new OnClickListener() {
+		Button usageButton = (Button) findViewById(R.id.usage_button);
+		usageButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
+				Intent intent = new Intent(MainActivity.this, UsageActivity.class);
 				startActivity(intent);
 			}
 		});
@@ -86,6 +74,15 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(MainActivity.this, CreditActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		Button topupsButton = (Button) findViewById(R.id.topups_button);
+		topupsButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, TopupsActivity.class);
 				startActivity(intent);
 			}
 		});

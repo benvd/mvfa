@@ -17,6 +17,7 @@
 
 package be.benvd.mvforandroid.data;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,36 +26,34 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "mvforandroid.db";
 	private static final int SCHEMA_VERSION = 1;
 
-	private static final String HISTORY_TABLE = "history";
-	private static final String TOPUPS = "topups";
-	private static final String CREDIT_TABLE = "credit";
-
-	public final History history;
+	public final Usage usage;
 	public final Credit credit;
+	public final Topups topups;
 
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, SCHEMA_VERSION);
 
-		this.history = new History();
+		this.usage = new Usage();
 		this.credit = new Credit();
+		this.topups = new Topups();
 	}
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("CREATE TABLE IF NOT EXISTS " + HISTORY_TABLE + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+		db.execSQL("CREATE TABLE IF NOT EXISTS " + Usage.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ "timestamp INTEGER NOT NULL, " + "duration INTEGER NOT NULL, " + "type INTEGER NOT NULL, "
-				+ "incoming INTEGER NOT NULL, " + "contact TEXT NOT NULL, " + "cost REAL NOT NULL);");
-		db.execSQL("CREATE TABLE IF NOT EXISTS " + TOPUPS + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+				+ "incoming INTEGER NOT NULL, " + "contact TEXT NOT NULL, " + "cost REAL NOT NULL,"
+				+ "is_search INTEGER NOT NULL);");
+		db.execSQL("CREATE TABLE IF NOT EXISTS " + Topups.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ "amount REAL NOT NULL, " + "method TEXT NOT NULL, " + "executed_on INTEGER NOT NULL, "
 				+ "received_on INTEGER NOT NULL, " + "status TEXT NOT NULL);");
-		db.execSQL("CREATE TABLE IF NOT EXISTS " + CREDIT_TABLE + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+		db.execSQL("CREATE TABLE IF NOT EXISTS " + Credit.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ "valid_until INTEGER NULL, " + "expired INTEGER NOT NULL, " + "sms INTEGER NOT NULL, "
 				+ "data INTEGER NOT NULL, " + "credits REAL NOT NULL);");
 	}
@@ -66,9 +65,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public class Credit {
 
+		private static final String TABLE_NAME = "credit";
+
 		public void update(JSONObject json) throws JSONException {
-			Cursor query = getWritableDatabase().query(CREDIT_TABLE, new String[] { "_id" }, null, null, null, null,
-					null);
+			Cursor query = getWritableDatabase()
+					.query(TABLE_NAME, new String[] { "_id" }, null, null, null, null, null);
 
 			ContentValues values = new ContentValues();
 
@@ -80,19 +81,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 			if (query.getCount() == 0) {
 				// No credit info stored yet, insert a row
-
-				Log.d("MVFA", "Inserted credit: " + getWritableDatabase().insert(CREDIT_TABLE, "valid_until", values));
+				getWritableDatabase().insert(TABLE_NAME, "valid_until", values);
 			} else {
 				// Credit info present already, so update it
-				Log.d("MVFA", "Updated credit: " + getWritableDatabase().update(CREDIT_TABLE, values, null, null));
+				getWritableDatabase().update(TABLE_NAME, values, null, null);
 			}
 
 			query.close();
-			getWritableDatabase().close();
 		}
 
 		public long getValidUntil() {
-			Cursor c = getWritableDatabase().query(CREDIT_TABLE, new String[] { "_id" }, null, null, null, null, null);
+			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			long result;
 
 			if (c.moveToFirst())
@@ -105,7 +104,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 
 		public boolean isExpired() {
-			Cursor c = getWritableDatabase().query(CREDIT_TABLE, new String[] { "_id" }, null, null, null, null, null);
+			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			boolean result;
 
 			if (c.moveToFirst())
@@ -118,7 +117,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 
 		public int getRemainingSms() {
-			Cursor c = getWritableDatabase().query(CREDIT_TABLE, new String[] { "_id" }, null, null, null, null, null);
+			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			int result;
 
 			if (c.moveToFirst())
@@ -131,7 +130,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 
 		public int getRemainingData() {
-			Cursor c = getWritableDatabase().query(CREDIT_TABLE, new String[] { "_id" }, null, null, null, null, null);
+			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			int result;
 
 			if (c.moveToFirst())
@@ -144,7 +143,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 
 		public double getRemainingCredit() {
-			Cursor c = getWritableDatabase().query(CREDIT_TABLE, new String[] { "_id" }, null, null, null, null, null);
+			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			double result;
 
 			if (c.moveToFirst())
@@ -157,19 +156,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	public class History {
+	public class Usage {
+
+		private static final String TABLE_NAME = "usage";
 
 		public static final int TYPE_DATA = 0;
 		public static final int TYPE_SMS = 1;
 		public static final int TYPE_VOICE = 2;
 		public static final int TYPE_MMS = 3;
 
-		public void insert(JSONObject json) throws JSONException {
-			// TODO Check unicity (based on timestamp + contact, for instance.
-			// TODO Respect max history entries preference (clean up oldest if necessary).
+		/**
+		 * Adds all entries of the JSON array to the usage table. If isSearch is true, all current database entries with
+		 * isSearch set to true will be removed beforehand, and vice versa.
+		 * 
+		 * @param jsonArray
+		 * @param isSearch
+		 *            Flag to determine whether the usage entries were obtained by searching (i.e. the user specified a
+		 *            given time period) or by auto updating (i.e. entries of the present day).
+		 * @throws JSONException
+		 */
+		public void update(JSONArray jsonArray, boolean isSearch) throws JSONException {
+			// Delete all rows of the given type (isSearch)
+			getWritableDatabase().delete(TABLE_NAME, "is_search=" + (isSearch ? 1 : 0), null);
+
+			for (int i = 0; i < jsonArray.length(); i++) {
+				JSONObject json = jsonArray.getJSONObject(i);
+				insert(json, isSearch);
+			}
+		}
+
+		public void insert(JSONObject json, boolean isSearch) throws JSONException {
 			ContentValues values = new ContentValues();
 			values.put("timestamp", ParseUtil.getDateFromAPI(json.getString("start_timestamp")).getTime());
-			values.put("duration", json.getLong("start_timestamp"));
+			values.put("duration", json.getLong("duration_connection"));
 
 			if (Boolean.parseBoolean(json.getString("is_data")))
 				values.put("type", TYPE_DATA);
@@ -183,9 +202,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			values.put("incoming", (Boolean.parseBoolean(json.getString("is_incoming")) ? 1 : 0));
 			values.put("contact", json.getString("to"));
 			values.put("cost", Double.parseDouble(json.getString("price")));
+			values.put("is_search", isSearch);
 
-			getWritableDatabase().insert(HISTORY_TABLE, "timestamp", values);
-			getWritableDatabase().close();
+			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);
+		}
+
+		public Cursor getAll() {
+			return getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 		}
 
 		public long getTimestamp(Cursor c) {
@@ -214,4 +237,54 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	}
 
+	public class Topups {
+
+		private static final String TABLE_NAME = "topups";
+
+		public void update(JSONArray jsonArray, boolean b) throws JSONException {
+			getWritableDatabase().delete(TABLE_NAME, null, null);
+
+			for (int i = 0; i < jsonArray.length(); i++) {
+				JSONObject json = jsonArray.getJSONObject(i);
+				insert(json);
+			}
+		}
+
+		private void insert(JSONObject json) throws JSONException {
+			ContentValues values = new ContentValues();
+
+			values.put("amount", Double.parseDouble(json.getString("amount")));
+			values.put("method", json.getString("method"));
+			values.put("executed_on", ParseUtil.getDateFromAPI(json.getString("executed_on")).getTime());
+			values.put("received_on", ParseUtil.getDateFromAPI(json.getString("payment_received_on")).getTime());
+			values.put("status", json.getString("status"));
+
+			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);
+		}
+
+		public Cursor getAll() {
+			return getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
+		}
+
+		public double getAmount(Cursor c) {
+			return c.getDouble(1);
+		}
+
+		public String getMethod(Cursor c) {
+			return c.getString(2);
+		}
+
+		public long getExecutedOn(Cursor c) {
+			return c.getLong(3);
+		}
+
+		public long getReceivedOn(Cursor c) {
+			return c.getLong(4);
+		}
+
+		public String getStatus(Cursor c) {
+			return c.getString(5);
+		}
+
+	}
 }
