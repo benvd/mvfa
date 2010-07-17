@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
+<ScrollView
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
 
-	<TextView
+	<LinearLayout
+		android:orientation="vertical"
 		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:id="@+id/text"
-		android:singleLine="false" />
+		android:layout_height="fill_parent">
 
-</LinearLayout>
+		<Button
+			style="@style/MainButton"
+			android:id="@+id/credit_button"
+			android:text="@string/credit" />
+
+		<Button
+			style="@style/MainButton"
+			android:id="@+id/history_button"
+			android:text="@string/history" />
+
+		<Button
+			style="@style/MainButton"
+			android:id="@+id/topups_button"
+			android:text="@string/topups" />
+
+	</LinearLayout>
+
+</ScrollView>

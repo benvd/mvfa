@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
 	xmlns:android="http://schemas.android.com/apk/res/android">
+
 	<EditTextPreference
 		android:key="update_frequency"
 		android:title="Update frequency"
-		android:defaultValue="5000" />
+		android:defaultValue="5000"
+		android:numeric="integer" />
+
+	<PreferenceCategory
+		android:title="Credentials" />
+
+	<EditTextPreference
+		android:key="username"
+		android:title="Username" />
+
+	<EditTextPreference
+		android:key="password"
+		android:title="Password"
+		android:password="true" />
+
 </PreferenceScreen>

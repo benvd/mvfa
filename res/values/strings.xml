@@ -2,4 +2,11 @@
 <resources>
 	<string
 		name="app_name">Mobile Vikings for Android</string>
+
+	<string
+		name="credit">Credit</string>
+	<string
+		name="history">History</string>
+	<string
+		name="topups">Topups</string>
 </resources>

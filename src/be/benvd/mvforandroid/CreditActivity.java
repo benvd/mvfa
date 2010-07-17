@@ -17,15 +17,26 @@
 
 package be.benvd.mvforandroid;
 
+import be.benvd.mvforandroid.data.DatabaseHelper;
+import android.app.Activity;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
+import android.widget.TextView;
 
-public class SettingsActivity extends PreferenceActivity {
+public class CreditActivity extends Activity {
+
+	private DatabaseHelper helper;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		addPreferencesFromResource(R.xml.settings);
+
+		setContentView(R.layout.credit);
+
+		helper = new DatabaseHelper(this);
+
+		TextView creditText = (TextView) findViewById(R.id.credit_text);
+		creditText.setText(helper.credit.getRemainingSms());
+
 	}
 
 }

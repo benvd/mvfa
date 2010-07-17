@@ -15,17 +15,22 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package be.benvd.mvforandroid;
+package be.benvd.mvforandroid.data;
 
-import android.os.Bundle;
-import android.preference.PreferenceActivity;
+import android.content.BroadcastReceiver;
 
-public class SettingsActivity extends PreferenceActivity {
+import android.content.Context;
+import android.content.Intent;
+
+import com.commonsware.cwac.wakeful.WakefulIntentService;
+
+public class OnAlarmReceiver extends BroadcastReceiver {
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		addPreferencesFromResource(R.xml.settings);
+	public void onReceive(Context context, Intent intent) {
+		Intent i = new Intent(context, MVDataService.class);
+		i.setAction(MVDataService.UPDATE_ACTION);
+		WakefulIntentService.sendWakefulWork(context, i);
 	}
 
 }

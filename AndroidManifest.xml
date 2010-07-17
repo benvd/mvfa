@@ -11,9 +11,6 @@
 		android:label="@string/app_name"
 		android:debuggable="true">
 
-		<uses-sdk
-			android:minSdkVersion="3" />
-
 		<activity
 			android:name=".MainActivity"
 			android:label="@string/app_name">
@@ -26,18 +23,30 @@
 		</activity>
 
 		<activity
+			android:name=".HistoryActivity"
+			android:label="@string/app_name"></activity>
+
+		<activity
+			android:name=".CreditActivity"
+			android:label="@string/app_name"></activity>
+
+		<activity
 			android:name=".SettingsActivity"
 			android:label="@string/app_name"></activity>
 
 		<service
-			android:name=".MVDataService">
+			android:name=".data.MVDataService">
 		</service>
 
 		<receiver
-			android:name=".OnAlarmReceiver">
+			android:name=".data.OnAlarmReceiver">
 		</receiver>
 
 	</application>
+
+	<uses-sdk
+		android:minSdkVersion="3"
+		android:targetSdkVersion="8" />
 
 	<uses-permission
 		android:name="android.permission.INTERNET"></uses-permission>

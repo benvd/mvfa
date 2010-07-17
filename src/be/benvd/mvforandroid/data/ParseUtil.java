@@ -15,17 +15,25 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package be.benvd.mvforandroid;
+package be.benvd.mvforandroid.data;
 
-import android.os.Bundle;
-import android.preference.PreferenceActivity;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class SettingsActivity extends PreferenceActivity {
+import android.util.Log;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		addPreferencesFromResource(R.xml.settings);
+public class ParseUtil {
+
+	private static SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	public static Date getDateFromAPI(String dateString) {
+		try {
+			return apiFormat.parse(dateString);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			Log.e("MVFA", "Exception in getDateFromAPI", e);
+			return null;
+		}
 	}
-
 }
