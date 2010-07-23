@@ -15,10 +15,8 @@
 
 	<string
 		name="auto_update">Auto Update</string>
-
 	<string
 		name="auto_update_frequency">Frequency</string>
-
 	<string
 		name="settings_frequency">Application will update every %s.</string>
 	<string
@@ -35,6 +33,19 @@
 		name="settings_auto_topups_disabled">Top-up info will not be updated.</string>
 
 
-	<!--  -->
+	<!-- CREDITS -->
+	
+	<string
+		name="update">Update</string>
+	<string
+		name="topup">Topup</string>
+	<string
+		name="remaining">remaining</string>
+	<string
+		name="megabytes_remaining">MB remaining</string>
+	<string
+		name="sms_remaining">SMS\'s remaining</string>
+	<string
+		name="valid_until">Valid until</string>
 
 </resources>

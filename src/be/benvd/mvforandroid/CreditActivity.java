@@ -29,12 +29,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 import be.benvd.mvforandroid.data.DatabaseHelper;
+import be.benvd.mvforandroid.data.FormatUtil;
 import be.benvd.mvforandroid.data.MVDataService;
 
 public class CreditActivity extends Activity {
@@ -54,8 +53,6 @@ public class CreditActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.credit);
 
 		helper = new DatabaseHelper(this);
@@ -74,16 +71,17 @@ public class CreditActivity extends Activity {
 
 	private void updateView() {
 		TextView creditText = (TextView) findViewById(R.id.credit_text);
-		creditText.setText(helper.credit.getRemainingCredit() + " EUR remaining");
+		creditText.setText(FormatUtil.formatCurrency(helper.credit.getRemainingCredit()) + " "
+				+ getString(R.string.remaining));
 
 		TextView smsText = (TextView) findViewById(R.id.sms_text);
-		smsText.setText(helper.credit.getRemainingSms() + " SMS remaining");
+		smsText.setText(helper.credit.getRemainingSms() + " " + getString(R.string.sms_remaining));
 
 		TextView dataText = (TextView) findViewById(R.id.data_text);
-		dataText.setText(helper.credit.getRemainingData() + " bytes remaining");
+		dataText.setText(helper.credit.getRemainingData() / 1048576 + " " + getString(R.string.megabytes_remaining));
 
 		TextView validText = (TextView) findViewById(R.id.valid_text);
-		validText.setText("Valid until " + helper.credit.getValidUntil());
+		validText.setText(getString(R.string.valid_until) + " " + helper.credit.getValidUntil());
 	}
 
 	@Override

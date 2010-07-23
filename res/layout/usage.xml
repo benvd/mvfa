@@ -1,7 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ListView
+<RelativeLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/usage_list"
 	android:layout_width="fill_parent"
-	android:layout_height="fill_parent"></ListView>
+	android:layout_height="fill_parent">
+
+	<ListView
+		android:id="@+id/usage_list"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"></ListView>
+
+
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:orientation="horizontal"
+		android:background="@android:drawable/bottom_bar">
+
+		<Button
+			android:id="@+id/update_button"
+			android:text="@string/update"
+			android:layout_height="wrap_content"
+			android:layout_width="0dip"
+			android:layout_weight="1"
+			android:layout_gravity="center_vertical" />
+
+	</LinearLayout>
+
+</RelativeLayout>

@@ -17,15 +17,18 @@
 
 package be.benvd.mvforandroid.data;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.util.Log;
 
-public class ParseUtil {
+public class FormatUtil {
 
-	private static SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static SimpleDateFormat apiFormat = new SimpleDateFormat(
+			"yyyy-MM-dd HH:mm:ss");
+	private static DecimalFormat currencyFormat = new DecimalFormat("#.##");
 
 	public static Date getDateFromAPI(String dateString) {
 		try {
@@ -35,5 +38,10 @@ public class ParseUtil {
 			Log.e("MVFA", "Exception in getDateFromAPI", e);
 			return null;
 		}
+	}
+
+	public static String formatCurrency(double amount) {
+		return currencyFormat.format(amount)+"€";
+
 	}
 }

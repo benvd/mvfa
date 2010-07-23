@@ -17,7 +17,8 @@
 
 package be.benvd.mvforandroid;
 
-import android.app.Activity;
+import my.android.app.TabActivity;
+import my.android.widget.TabHost;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -28,11 +29,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.view.Window;
+import android.widget.TextView;
 import be.benvd.mvforandroid.data.MVDataService;
 
-public class MainActivity extends Activity {
+public class MainActivity extends TabActivity {
 
 	private MVDataService dataService;
 
@@ -54,38 +55,14 @@ public class MainActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// TODO Progress in subactivities: need to call the progress methods of the MainActivity.
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.main);
 
 		// Binding the Activity to our MVDataService
 		bindService(new Intent(this, MVDataService.class), onService, BIND_AUTO_CREATE);
 
-		// Setting up UI
-		Button usageButton = (Button) findViewById(R.id.usage_button);
-		usageButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, UsageActivity.class);
-				startActivity(intent);
-			}
-		});
-
-		Button creditButton = (Button) findViewById(R.id.credit_button);
-		creditButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, CreditActivity.class);
-				startActivity(intent);
-			}
-		});
-
-		Button topupsButton = (Button) findViewById(R.id.topups_button);
-		topupsButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, TopupsActivity.class);
-				startActivity(intent);
-			}
-		});
+		setupTabHost();
 	}
 
 	@Override
@@ -122,6 +99,37 @@ public class MainActivity extends Activity {
 		}
 
 		return false;
+	}
+
+	private void setupTabHost() {
+		TabHost tabHost = getTabHost();
+		TabHost.TabSpec spec;
+		Intent intent;
+		View tabView;
+
+		intent = new Intent().setClass(this, CreditActivity.class);
+		tabView = getTabView(R.string.credit);
+		spec = tabHost.newTabSpec("credit").setIndicator(tabView).setContent(intent);
+		tabHost.addTab(spec);
+
+		intent = new Intent().setClass(this, UsageActivity.class);
+		tabView = getTabView(R.string.usage);
+		spec = tabHost.newTabSpec("usage").setIndicator(tabView).setContent(intent);
+		tabHost.addTab(spec);
+
+		intent = new Intent().setClass(this, TopupsActivity.class);
+		tabView = getTabView(R.string.topups);
+		spec = tabHost.newTabSpec("topups").setIndicator(tabView).setContent(intent);
+		tabHost.addTab(spec);
+
+		tabHost.setCurrentTabByTag("topups");
+	}
+
+	private View getTabView(int stringId) {
+		View view = getLayoutInflater().inflate(R.layout.tab_view, null, false);
+		TextView text = (TextView) view.findViewById(R.id.tab_text);
+		text.setText(stringId);
+		return view;
 	}
 
 }

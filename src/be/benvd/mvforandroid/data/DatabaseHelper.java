@@ -73,7 +73,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 			ContentValues values = new ContentValues();
 
-			values.put("valid_until", ParseUtil.getDateFromAPI(json.getString("valid_until")).getTime());
+			values.put("valid_until", FormatUtil.getDateFromAPI(json.getString("valid_until")).getTime());
 			values.put("expired", (Boolean.parseBoolean(json.getString("is_expired")) ? 1 : 0));
 			values.put("sms", Integer.parseInt(json.getString("sms")));
 			values.put("data", Long.parseLong(json.getString("data")));
@@ -187,7 +187,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		public void insert(JSONObject json, boolean isSearch) throws JSONException {
 			ContentValues values = new ContentValues();
-			values.put("timestamp", ParseUtil.getDateFromAPI(json.getString("start_timestamp")).getTime());
+			values.put("timestamp", FormatUtil.getDateFromAPI(json.getString("start_timestamp")).getTime());
 			values.put("duration", json.getLong("duration_connection"));
 
 			if (Boolean.parseBoolean(json.getString("is_data")))
@@ -255,8 +255,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 			values.put("amount", Double.parseDouble(json.getString("amount")));
 			values.put("method", json.getString("method"));
-			values.put("executed_on", ParseUtil.getDateFromAPI(json.getString("executed_on")).getTime());
-			values.put("received_on", ParseUtil.getDateFromAPI(json.getString("payment_received_on")).getTime());
+			values.put("executed_on", FormatUtil.getDateFromAPI(json.getString("executed_on")).getTime());
+			values.put("received_on", FormatUtil.getDateFromAPI(json.getString("payment_received_on")).getTime());
 			values.put("status", json.getString("status"));
 
 			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);
