@@ -26,8 +26,8 @@ import android.util.Log;
 
 public class FormatUtil {
 
-	private static SimpleDateFormat apiFormat = new SimpleDateFormat(
-			"yyyy-MM-dd HH:mm:ss");
+	private static SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static SimpleDateFormat validUntilFormat = new SimpleDateFormat("dd-MM-yyyy 'at' HH:mm");
 	private static DecimalFormat currencyFormat = new DecimalFormat("#.##");
 
 	public static Date getDateFromAPI(String dateString) {
@@ -41,7 +41,11 @@ public class FormatUtil {
 	}
 
 	public static String formatCurrency(double amount) {
-		return currencyFormat.format(amount)+"€";
+		return currencyFormat.format(amount) + "€";
 
+	}
+
+	public static String formatValidUntilDate(long validUntil) {
+		return validUntilFormat.format(new Date(validUntil));
 	}
 }

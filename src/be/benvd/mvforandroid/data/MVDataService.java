@@ -39,9 +39,9 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class MVDataService extends WakefulIntentService {
 
-	private final String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json";
-	private final String URL_CREDIT = "https://mobilevikings.com/api/2.0/basic/sim_balance.json";
-	private final String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
+	public final String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json";
+	public final String URL_CREDIT = "https://mobilevikings.com/api/2.0/basic/sim_balance.json?add_price_plan=1";
+	public final String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
 
 	private static final long RETRY_TIMEOUT = 30000;
 

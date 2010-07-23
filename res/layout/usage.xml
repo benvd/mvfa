@@ -5,13 +5,8 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
 
-	<ListView
-		android:id="@+id/usage_list"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"></ListView>
-
-
 	<LinearLayout
+		android:id="@+id/bottom_bar"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
@@ -27,5 +22,11 @@
 			android:layout_gravity="center_vertical" />
 
 	</LinearLayout>
+
+	<ListView
+		android:id="@+id/usage_list"
+		android:layout_above="@id/bottom_bar"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent" />
 
 </RelativeLayout>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_height="wrap_content"
+	android:layout_width="fill_parent"
+	android:orientation="horizontal"
+	android:gravity="center_vertical">
+
+	<ImageView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:layout_margin="12dip"
+		android:src="@drawable/credit_credit" />
+
+	<TextView
+		android:id="@+id/credit_text"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent" />
+
+</LinearLayout>

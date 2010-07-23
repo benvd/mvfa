@@ -55,7 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				+ "received_on INTEGER NOT NULL, " + "status TEXT NOT NULL);");
 		db.execSQL("CREATE TABLE IF NOT EXISTS " + Credit.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ "valid_until INTEGER NULL, " + "expired INTEGER NOT NULL, " + "sms INTEGER NOT NULL, "
-				+ "data INTEGER NOT NULL, " + "credits REAL NOT NULL);");
+				+ "data INTEGER NOT NULL, " + "credits REAL NOT NULL, " + "price_plan INTEGER NOT NULL);");
 	}
 
 	@Override
@@ -78,6 +78,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			values.put("sms", Integer.parseInt(json.getString("sms")));
 			values.put("data", Long.parseLong(json.getString("data")));
 			values.put("credits", Double.parseDouble(json.getString("credits")));
+			if (json.getString("price_plan").equalsIgnoreCase("classic"))
+				values.put("price_plan", 15);
+			else
+				values.put("price_plan", 40);
 
 			if (query.getCount() == 0) {
 				// No credit info stored yet, insert a row
@@ -154,6 +158,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			c.close();
 			return result;
 		}
+
+		public int getPricePlan() {
+			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
+			int result;
+
+			if (c.moveToFirst())
+				result = c.getInt(6);
+			else
+				result = 0;
+
+			c.close();
+			return result;
+		}
 	}
 
 	public class Usage {
@@ -170,9 +187,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		 * isSearch set to true will be removed beforehand, and vice versa.
 		 * 
 		 * @param jsonArray
-		 * @param isSearch
-		 *            Flag to determine whether the usage entries were obtained by searching (i.e. the user specified a
-		 *            given time period) or by auto updating (i.e. entries of the present day).
+		 * @param isSearch Flag to determine whether the usage entries were obtained by searching (i.e. the user
+		 *            specified a given time period) or by auto updating (i.e. entries of the present day).
 		 * @throws JSONException
 		 */
 		public void update(JSONArray jsonArray, boolean isSearch) throws JSONException {
