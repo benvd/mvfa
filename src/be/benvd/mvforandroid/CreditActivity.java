@@ -125,10 +125,6 @@ public class CreditActivity extends Activity {
 			return "{\"valid_until\": \"2010-08-16 13:24:00\", \"data\": 753741824, \"sms\": 869, \"credits\": \"6.59\", \"price_plan\": \"Classic\", \"is_expired\": false}";
 		}
 
-		private int getRandom(int to) {
-			return (int) Math.floor(Math.random() * to);
-		}
-
 		@Override
 		protected void onPostExecute(Void result) {
 			updateView();
@@ -198,7 +194,7 @@ public class CreditActivity extends Activity {
 			c.setBitmap(result);
 
 			// Draw background
-			c.drawColor(Color.TRANSPARENT);
+			c.drawColor(0xffeeeeee);
 
 			// Draw progress rectangle
 			Paint paint = new Paint();

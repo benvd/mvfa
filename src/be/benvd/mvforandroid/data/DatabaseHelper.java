@@ -182,6 +182,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		public static final int TYPE_VOICE = 2;
 		public static final int TYPE_MMS = 3;
 
+		public static final int ORDER_DATE = 1;
+
 		/**
 		 * Adds all entries of the JSON array to the usage table. If isSearch is true, all current database entries with
 		 * isSearch set to true will be removed beforehand, and vice versa.
@@ -223,8 +225,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);
 		}
 
-		public Cursor getAll() {
-			return getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
+		/**
+		 * Returns a cursor over the Usage table.
+		 * 
+		 * @param isSearch Whether to include usage records obtained by a search, or (xor) those obtained through
+		 *            auto-updating.
+		 * @param order The constant representing the field to order the cursor by.
+		 * @param ascending Whether the order should be ascending or descending.
+		 */
+		public Cursor get(boolean isSearch, int order, boolean ascending) {
+			String orderBy = null;
+			switch (order) {
+				case ORDER_DATE:
+					orderBy = "timestamp " + (ascending ? "asc" : "desc");
+			}
+			return getReadableDatabase().query(TABLE_NAME, null, "is_search=" + (isSearch ? 1 : 0), null, null, null,
+					orderBy);
+		}
+
+		public Cursor getDates(boolean isSearch) {
+			return getReadableDatabase().query(true, TABLE_NAME, new String[] { "timestamp" },
+					"is_search=" + (isSearch ? 1 : 0), null, null, null, "timestamp desc", null);
+		}
+
+		public Cursor getBetween(boolean isSearch, long timestamp, long timestampEnd) {
+			return getReadableDatabase().query(
+					TABLE_NAME,
+					null,
+					"is_search=" + (isSearch ? 1 : 0) + " AND timestamp >= " + timestamp + " AND timestamp <= "
+							+ timestampEnd, null, null, null, "timestamp desc");
 		}
 
 		public long getTimestamp(Cursor c) {
