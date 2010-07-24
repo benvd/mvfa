@@ -279,8 +279,6 @@ public class TabWidget extends LinearLayout implements OnFocusChangeListener {
 		}
 		super.addView(child);
 
-		// TODO: detect this via geometry with a tabwidget listener rather
-		// than potentially interfere with the view's listener
 		child.setOnClickListener(new TabClickListener(getTabCount() - 1));
 		child.setOnFocusChangeListener(this);
 	}

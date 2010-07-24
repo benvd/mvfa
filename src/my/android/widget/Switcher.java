@@ -123,7 +123,6 @@ class Switcher extends FrameLayout {
 
 	void moveLeft() {
 		try {
-			// TODO: Clean this up... It is messy.
 			if (this.getParent().getParent() instanceof my.android.widget.TabHost) {
 				my.android.widget.TabHost MyTabHost = ((my.android.widget.TabHost) Switcher.this.getParent()
 						.getParent());
@@ -144,14 +143,12 @@ class Switcher extends FrameLayout {
 				}
 			}
 		} catch (Exception e) {
-			// TODO: Actually do something here...
 		}
 	}
 
 	void moveRight() {
 		try {
 			// Switch the tab on the Parent TabHost
-			// TODO: Clean this up... It is messy.
 			if (this.getParent().getParent() instanceof my.android.widget.TabHost) {
 				my.android.widget.TabHost MyTabHost = ((my.android.widget.TabHost) Switcher.this.getParent()
 						.getParent());
@@ -172,7 +169,6 @@ class Switcher extends FrameLayout {
 				}
 			}
 		} catch (Exception e) {
-			// TODO: Actually do something here...
 		}
 	}
 

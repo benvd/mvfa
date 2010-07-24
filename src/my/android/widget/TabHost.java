@@ -675,12 +675,6 @@ public class TabHost extends FrameLayout implements ViewTreeObserver.OnTouchMode
 			}
 			mLaunchedView = wd;
 
-			// XXX Set FOCUS_AFTER_DESCENDANTS on embedded activities for now so they can get
-			// focus if none of their children have it. They need focus to be able to
-			// display menu items.
-			//
-			// Replace this with something better when Bug 628886 is fixed...
-			//
 			if (mLaunchedView != null) {
 				mLaunchedView.setVisibility(View.VISIBLE);
 				mLaunchedView.setFocusableInTouchMode(true);
