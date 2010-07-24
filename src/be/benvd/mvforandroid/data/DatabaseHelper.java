@@ -17,6 +17,10 @@
 
 package be.benvd.mvforandroid.data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +30,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -63,6 +68,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		// We're still at the first version of our schema (see SCHEMA_VERSION), so this method will not be called.
 	}
 
+	private static SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	private static Date getDateFromAPI(String dateString) {
+		try {
+			return apiFormat.parse(dateString);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			Log.e("MVFA", "Exception in getDateFromAPI", e);
+			return null;
+		}
+	}
+
 	public class Credit {
 
 		private static final String TABLE_NAME = "credit";
@@ -73,7 +90,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 			ContentValues values = new ContentValues();
 
-			values.put("valid_until", FormatUtil.getDateFromAPI(json.getString("valid_until")).getTime());
+			values.put("valid_until", getDateFromAPI(json.getString("valid_until")).getTime());
 			values.put("expired", (Boolean.parseBoolean(json.getString("is_expired")) ? 1 : 0));
 			values.put("sms", Integer.parseInt(json.getString("sms")));
 			values.put("data", Long.parseLong(json.getString("data")));
@@ -205,7 +222,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		public void insert(JSONObject json, boolean isSearch) throws JSONException {
 			ContentValues values = new ContentValues();
-			values.put("timestamp", FormatUtil.getDateFromAPI(json.getString("start_timestamp")).getTime());
+			values.put("timestamp", getDateFromAPI(json.getString("start_timestamp")).getTime());
 			values.put("duration", json.getLong("duration_connection"));
 
 			if (Boolean.parseBoolean(json.getString("is_data")))
@@ -243,17 +260,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 					orderBy);
 		}
 
-		public Cursor getDates(boolean isSearch) {
+		public Cursor getDates(boolean isSearch, boolean ascending) {
 			return getReadableDatabase().query(true, TABLE_NAME, new String[] { "timestamp" },
-					"is_search=" + (isSearch ? 1 : 0), null, null, null, "timestamp desc", null);
+					"is_search=" + (isSearch ? 1 : 0), null, null, null, "timestamp " + (ascending ? "asc" : "desc"),
+					null);
 		}
 
-		public Cursor getBetween(boolean isSearch, long timestamp, long timestampEnd) {
+		public Cursor getBetween(boolean isSearch, long timestamp, long timestampEnd, boolean ascending) {
 			return getReadableDatabase().query(
 					TABLE_NAME,
 					null,
 					"is_search=" + (isSearch ? 1 : 0) + " AND timestamp >= " + timestamp + " AND timestamp <= "
-							+ timestampEnd, null, null, null, "timestamp desc");
+							+ timestampEnd, null, null, null, "timestamp " + (ascending ? "asc" : "desc"));
 		}
 
 		public long getTimestamp(Cursor c) {
@@ -300,8 +318,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 			values.put("amount", Double.parseDouble(json.getString("amount")));
 			values.put("method", json.getString("method"));
-			values.put("executed_on", FormatUtil.getDateFromAPI(json.getString("executed_on")).getTime());
-			values.put("received_on", FormatUtil.getDateFromAPI(json.getString("payment_received_on")).getTime());
+			values.put("executed_on", getDateFromAPI(json.getString("executed_on")).getTime());
+			values.put("received_on", getDateFromAPI(json.getString("payment_received_on")).getTime());
 			values.put("status", json.getString("status"));
 
 			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);

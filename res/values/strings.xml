@@ -3,12 +3,24 @@
 	<string
 		name="app_name">Mobile Vikings for Android</string>
 
+	<!-- TABS -->
+
 	<string
 		name="credit">Credit</string>
 	<string
 		name="usage">Usage</string>
 	<string
 		name="topups">Top-ups</string>
+
+
+	<!-- MENUS -->
+
+	<string
+		name="settings">Settings</string>
+	<string
+		name="ascending">Ascending</string>
+	<string
+		name="descending">Descending</string>
 
 
 	<!-- SETTINGS -->
@@ -34,7 +46,7 @@
 
 
 	<!-- CREDITS -->
-	
+
 	<string
 		name="update">Update</string>
 	<string
@@ -47,5 +59,13 @@
 		name="sms_remaining">SMS\'s remaining</string>
 	<string
 		name="valid_until">Valid until</string>
+
+
+	<string
+		name="megabytes">MB</string>
+	<string
+		name="kilobytes">KB</string>
+	<string
+		name="at_hour">at</string>
 
 </resources>

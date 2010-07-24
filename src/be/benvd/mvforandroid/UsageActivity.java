@@ -17,7 +17,10 @@
 
 package be.benvd.mvforandroid;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +35,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -41,7 +47,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import be.benvd.mvforandroid.data.DatabaseHelper;
-import be.benvd.mvforandroid.data.FormatUtil;
 import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.merge.MergeAdapter;
@@ -49,6 +54,9 @@ import com.commonsware.cwac.merge.MergeAdapter;
 public class UsageActivity extends Activity {
 
 	public DatabaseHelper helper;
+
+	// TODO Store this in the preferences (but not through SettingsActivity -- just remember it for later).
+	private boolean ascending = true;
 
 	private BroadcastReceiver receiver = new BroadcastReceiver() {
 		@Override
@@ -79,7 +87,7 @@ public class UsageActivity extends Activity {
 		ListView usageList = (ListView) findViewById(R.id.usage_list);
 		MergeAdapter adapter = new MergeAdapter();
 
-		Cursor c = helper.usage.getDates(false);
+		Cursor c = helper.usage.getDates(false, ascending);
 		ArrayList<Long> daysProcessed = new ArrayList<Long>();
 		long timestamp, timestampEnd;
 		while (c.moveToNext()) {
@@ -93,10 +101,10 @@ public class UsageActivity extends Activity {
 
 				timestampEnd = timestamp + 86400000; // Begin of the day + one day in millis = end of the day
 
-				Cursor usageByDay = helper.usage.getBetween(false, timestamp, timestampEnd);
+				Cursor usageByDay = helper.usage.getBetween(false, timestamp, timestampEnd, ascending);
 				View separator = getLayoutInflater().inflate(R.layout.credit_separator, null, false);
 				TextView text = (TextView) separator.findViewById(R.id.separator_text);
-				text.setText(FormatUtil.formatDate(timestamp));
+				text.setText(formatDate(timestamp));
 				adapter.addView(separator);
 				adapter.addAdapter(new UsageSectionAdapter(usageByDay));
 			}
@@ -122,6 +130,81 @@ public class UsageActivity extends Activity {
 		helper.close();
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		new MenuInflater(this).inflate(R.menu.usage_menu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		MenuItem ascDesc = menu.findItem(R.id.change_asc_desc);
+		if (ascending) {
+			ascDesc.setIcon(R.drawable.menu_sort_descending);
+			ascDesc.setTitle(R.string.descending);
+		} else {
+			ascDesc.setIcon(R.drawable.menu_sort_ascending);
+			ascDesc.setTitle(R.string.ascending);
+		}
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.change_asc_desc: {
+				ascending = !ascending;
+				updateView();
+				return true;
+			}
+			case R.id.settings: {
+				Intent intent = new Intent(this, SettingsActivity.class);
+				startActivity(intent);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static DecimalFormat currencyFormat = new DecimalFormat("#.##");
+	private static SimpleDateFormat formatTime = new SimpleDateFormat("HH:mm");
+	private static DecimalFormat dataFormat = new DecimalFormat("#.##");
+
+	private static String formatCurrency(double amount) {
+		return currencyFormat.format(amount) + "€";
+
+	}
+
+	private static String formatTime(long timestamp) {
+		return formatTime.format(new Date(timestamp));
+	}
+
+	private static String formatBytes(Context c, long bytes) {
+		if (bytes < 1048576) {
+			return dataFormat.format((double) bytes / 1024) + " " + c.getString(R.string.kilobytes);
+		} else {
+			return dataFormat.format((double) bytes / 1048576) + " " + c.getString(R.string.megabytes);
+		}
+	}
+
+	private static String formatDuration(long duration) {
+		int hours = (int) (duration / 3600);
+		int minutes = (int) ((duration / 60) - (hours * 60));
+		int seconds = (int) (duration % 60);
+		String result = "";
+		if (hours != 0)
+			result += String.format("%02d:", hours);
+		result += String.format("%02d:%02d", minutes, seconds);
+		return result;
+	}
+
+	private SimpleDateFormat formatDate = new SimpleDateFormat("dd-MM-yyyy");
+
+	private String formatDate(long timestamp) {
+		return formatDate.format(new Date(timestamp));
+	}
+
 	static class UsageHolder {
 		private ImageView logo = null;
 		private TextView title = null, cost = null, date = null, duration = null;
@@ -135,17 +218,25 @@ public class UsageActivity extends Activity {
 		}
 
 		void populateFrom(Cursor c, DatabaseHelper helper) {
+			title.setText(helper.usage.getContact(c));
+			cost.setText(formatCurrency(helper.usage.getCost(c)));
+			date.setText(formatTime(helper.usage.getTimestamp(c)));
+			duration.setText("xx");
+
 			switch (helper.usage.getType(c)) {
 				case DatabaseHelper.Usage.TYPE_DATA: {
 					logo.setImageResource(R.drawable.credit_data);
+					duration.setText(formatBytes(duration.getContext(), helper.usage.getduration(c)));
 					break;
 				}
 				case DatabaseHelper.Usage.TYPE_MMS: {
 					logo.setImageResource(R.drawable.credit_sms);
+					duration.setText("");
 					break;
 				}
 				case DatabaseHelper.Usage.TYPE_SMS: {
 					logo.setImageResource(R.drawable.credit_sms);
+					duration.setText("");
 					break;
 				}
 				case DatabaseHelper.Usage.TYPE_VOICE: {
@@ -153,13 +244,10 @@ public class UsageActivity extends Activity {
 						logo.setImageResource(R.drawable.call_incoming);
 					else
 						logo.setImageResource(R.drawable.call_outgoing);
+					duration.setText(formatDuration(helper.usage.getduration(c)));
 					break;
 				}
 			}
-			title.setText(helper.usage.getContact(c));
-			cost.setText(FormatUtil.formatCurrency(helper.usage.getCost(c)));
-			date.setText(FormatUtil.formatTime(helper.usage.getTimestamp(c)));
-			duration.setText("xx");
 		}
 	}
 

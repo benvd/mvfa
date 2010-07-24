@@ -17,6 +17,10 @@
 
 package be.benvd.mvforandroid;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,6 +37,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -40,7 +47,6 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import be.benvd.mvforandroid.data.DatabaseHelper;
-import be.benvd.mvforandroid.data.FormatUtil;
 import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.sacklist.SackOfViewsAdapter;
@@ -101,6 +107,38 @@ public class CreditActivity extends Activity {
 		helper.close();
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		new MenuInflater(this).inflate(R.menu.credit_menu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.settings:
+				Intent intent = new Intent(this, SettingsActivity.class);
+				startActivity(intent);
+				return true;
+		}
+
+		return false;
+	}
+
+	private DecimalFormat currencyFormat = new DecimalFormat("#.##");
+	private SimpleDateFormat validUntilFormat;
+
+	private String formatCurrency(double amount) {
+		return currencyFormat.format(amount) + "€";
+
+	}
+
+	public String formatValidUntilDate(long validUntil) {
+		if (validUntilFormat == null)
+			validUntilFormat = new SimpleDateFormat("dd-MM-yyyy '" + getString(R.string.at_hour) + "' HH:mm");
+		return validUntilFormat.format(new Date(validUntil));
+	}
+
 	// TODO handle rotation
 
 	public class UpdateCreditTask extends AsyncTask<Void, Void, Void> {
@@ -146,7 +184,7 @@ public class CreditActivity extends Activity {
 					double remainingCredit = helper.credit.getRemainingCredit();
 					View view = getLayoutInflater().inflate(R.layout.credit_credit, parent, false);
 					TextView text = (TextView) view.findViewById(R.id.credit_text);
-					text.setText(FormatUtil.formatCurrency(remainingCredit) + " " + getString(R.string.remaining));
+					text.setText(formatCurrency(remainingCredit) + " " + getString(R.string.remaining));
 
 					float ratio = ((float) remainingCredit / helper.credit.getPricePlan());
 					view.setBackgroundDrawable(getProgressBackground(ratio));
@@ -179,7 +217,7 @@ public class CreditActivity extends Activity {
 					View view = getLayoutInflater().inflate(R.layout.credit_valid, parent, false);
 					TextView text = (TextView) view.findViewById(R.id.valid_text);
 					text.setText(getString(R.string.valid_until) + " "
-							+ FormatUtil.formatValidUntilDate(helper.credit.getValidUntil()));
+							+ formatValidUntilDate(helper.credit.getValidUntil()));
 					return view;
 				}
 			}
