@@ -51,6 +51,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import be.benvd.mvforandroid.data.DatabaseHelper;
+import be.benvd.mvforandroid.data.DatabaseHelper.Usage;
 import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.merge.MergeAdapter;
@@ -119,20 +120,71 @@ public class UsageActivity extends Activity {
 		usageList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Log.d("MVFA", "clicked on " + view);
-				// if (!id.equals("")) {
-				// Intent intent = new Intent();
-				// intent.setAction(Intent.ACTION_VIEW);
-				// intent.setData(Uri.withAppendedPath(Contacts.People.CONTENT_URI, Uri.encode(id)));
-				// startActivity(intent);
-				// } else {
-				// Intent intent = new Intent();
-				// intent.setAction(Intent.ACTION_DIAL);
-				// intent.setData(Uri.parse("tel:" + call.getTo()));
-				// startActivity(intent);
-				// }
+				Cursor c = helper.usage.get(id);
+				if (c.moveToFirst()) {
+					if (helper.usage.getType(c) == Usage.TYPE_DATA)
+						return;
+
+					String contact = helper.usage.getContact(c);
+					String contactId = getContactIdFromNumber(UsageActivity.this, contact);
+					if (!contactId.equals("")) {
+						Intent intent = new Intent();
+						intent.setAction(Intent.ACTION_VIEW);
+						intent.setData(Uri.withAppendedPath(Contacts.People.CONTENT_URI, Uri.encode(contactId)));
+						startActivity(intent);
+					} else {
+						Intent intent = new Intent();
+						intent.setAction(Intent.ACTION_DIAL);
+						intent.setData(Uri.parse("tel:" + contact));
+						startActivity(intent);
+					}
+				}
+				c.close();
 			}
 		});
+	}
+
+	public static String getContactIdFromNumber(Context context, String number) {
+		// define the columns I want the query to return
+		String[] projection = new String[] { Contacts.People._ID };
+
+		// encode the phone number and build the filter URI
+		Uri contactUri = Uri.withAppendedPath(Contacts.People.CONTENT_FILTER_URI,
+				Uri.encode(getContactNameFromNumber(context, number)));
+
+		// query time
+		Cursor c = context.getContentResolver().query(contactUri, projection, null, null, null);
+
+		// if the query returns 1 or more results
+		// return the first result
+		if (c.moveToFirst()) {
+			String id = c.getString(c.getColumnIndex(Contacts.People._ID));
+			return id;
+		}
+
+		// return empty string if not found
+		return "";
+	}
+
+	public static String getContactNameFromNumber(Context context, String number) {
+		// define the columns I want the query to return
+		String[] projection = new String[] { Contacts.Phones.DISPLAY_NAME, Contacts.Phones.NUMBER };
+
+		// encode the phone number and build the filter URI
+		Uri contactUri = Uri.withAppendedPath(Contacts.Phones.CONTENT_FILTER_URL, Uri.encode(number));
+
+		// query time
+		Cursor c = context.getContentResolver().query(contactUri, projection, null, null, null);
+
+		// if the query returns 1 or more results
+		// return the first result
+		if (c.moveToFirst()) {
+			String name = c.getString(c.getColumnIndex(Contacts.Phones.DISPLAY_NAME));
+			return name;
+		}
+
+		// return the original number if no match was found
+		return number;
 	}
 
 	@Override
@@ -278,30 +330,10 @@ public class UsageActivity extends Activity {
 				}
 			}
 		}
-
-		private String getContactNameFromNumber(Context context, String number) {
-			// define the columns I want the query to return
-			String[] projection = new String[] { Contacts.Phones.DISPLAY_NAME, Contacts.Phones.NUMBER };
-
-			// encode the phone number and build the filter URI
-			Uri contactUri = Uri.withAppendedPath(Contacts.Phones.CONTENT_FILTER_URL, Uri.encode(number));
-
-			// query time
-			Cursor c = context.getContentResolver().query(contactUri, projection, null, null, null);
-
-			// if the query returns 1 or more results
-			// return the first result
-			if (c.moveToFirst()) {
-				String name = c.getString(c.getColumnIndex(Contacts.Phones.DISPLAY_NAME));
-				return name;
-			}
-
-			// return the original number if no match was found
-			return number;
-		}
 	}
 
 	class UsageSectionAdapter extends CursorAdapter {
+
 		UsageSectionAdapter(Cursor c) {
 			super(UsageActivity.this, c);
 		}

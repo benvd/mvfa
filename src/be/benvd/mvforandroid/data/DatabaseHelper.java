@@ -242,6 +242,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);
 		}
 
+		public Cursor get(long id) {
+			return getReadableDatabase().query(TABLE_NAME, null, "_id=" + id, null, null, null, null);
+		}
+
 		/**
 		 * Returns a cursor over the Usage table.
 		 * 
