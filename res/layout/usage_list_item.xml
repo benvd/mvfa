@@ -18,7 +18,8 @@
 		android:id="@+id/usage_title"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_toRightOf="@id/usage_logo" />
+		android:layout_toRightOf="@id/usage_logo"
+		android:textStyle="bold" />
 
 	<TextView
 		android:id="@+id/usage_date"

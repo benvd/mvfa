@@ -31,8 +31,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Contacts;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,6 +43,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
@@ -51,6 +55,7 @@ import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.merge.MergeAdapter;
 
+@SuppressWarnings("deprecation")
 public class UsageActivity extends Activity {
 
 	public DatabaseHelper helper;
@@ -110,6 +115,24 @@ public class UsageActivity extends Activity {
 			}
 		}
 		usageList.setAdapter(adapter);
+
+		usageList.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				Log.d("MVFA", "clicked on " + view);
+				// if (!id.equals("")) {
+				// Intent intent = new Intent();
+				// intent.setAction(Intent.ACTION_VIEW);
+				// intent.setData(Uri.withAppendedPath(Contacts.People.CONTENT_URI, Uri.encode(id)));
+				// startActivity(intent);
+				// } else {
+				// Intent intent = new Intent();
+				// intent.setAction(Intent.ACTION_DIAL);
+				// intent.setData(Uri.parse("tel:" + call.getTo()));
+				// startActivity(intent);
+				// }
+			}
+		});
 	}
 
 	@Override
@@ -218,7 +241,6 @@ public class UsageActivity extends Activity {
 		}
 
 		void populateFrom(Cursor c, DatabaseHelper helper) {
-			title.setText(helper.usage.getContact(c));
 			cost.setText(formatCurrency(helper.usage.getCost(c)));
 			date.setText(formatTime(helper.usage.getTimestamp(c)));
 			duration.setText("xx");
@@ -226,16 +248,22 @@ public class UsageActivity extends Activity {
 			switch (helper.usage.getType(c)) {
 				case DatabaseHelper.Usage.TYPE_DATA: {
 					logo.setImageResource(R.drawable.credit_data);
+					title.setText("Data");
 					duration.setText(formatBytes(duration.getContext(), helper.usage.getduration(c)));
 					break;
 				}
 				case DatabaseHelper.Usage.TYPE_MMS: {
 					logo.setImageResource(R.drawable.credit_sms);
+					title.setText(getContactNameFromNumber(title.getContext(), helper.usage.getContact(c)));
 					duration.setText("");
 					break;
 				}
 				case DatabaseHelper.Usage.TYPE_SMS: {
-					logo.setImageResource(R.drawable.credit_sms);
+					if (helper.usage.isIncoming(c))
+						logo.setImageResource(R.drawable.sms_incoming);
+					else
+						logo.setImageResource(R.drawable.sms_outgoing);
+					title.setText(getContactNameFromNumber(title.getContext(), helper.usage.getContact(c)));
 					duration.setText("");
 					break;
 				}
@@ -244,10 +272,32 @@ public class UsageActivity extends Activity {
 						logo.setImageResource(R.drawable.call_incoming);
 					else
 						logo.setImageResource(R.drawable.call_outgoing);
+					title.setText(getContactNameFromNumber(title.getContext(), helper.usage.getContact(c)));
 					duration.setText(formatDuration(helper.usage.getduration(c)));
 					break;
 				}
 			}
+		}
+
+		private String getContactNameFromNumber(Context context, String number) {
+			// define the columns I want the query to return
+			String[] projection = new String[] { Contacts.Phones.DISPLAY_NAME, Contacts.Phones.NUMBER };
+
+			// encode the phone number and build the filter URI
+			Uri contactUri = Uri.withAppendedPath(Contacts.Phones.CONTENT_FILTER_URL, Uri.encode(number));
+
+			// query time
+			Cursor c = context.getContentResolver().query(contactUri, projection, null, null, null);
+
+			// if the query returns 1 or more results
+			// return the first result
+			if (c.moveToFirst()) {
+				String name = c.getString(c.getColumnIndex(Contacts.Phones.DISPLAY_NAME));
+				return name;
+			}
+
+			// return the original number if no match was found
+			return number;
 		}
 	}
 
