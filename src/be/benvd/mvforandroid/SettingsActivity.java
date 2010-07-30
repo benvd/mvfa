@@ -39,10 +39,12 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 		autoCreditPreference = getPreferenceScreen().findPreference("auto_credit");
 		autoUsagePreference = getPreferenceScreen().findPreference("auto_usage");
 		autoTopupsPreference = getPreferenceScreen().findPreference("auto_topups");
+		updateCreditPreference(getPreferenceScreen().getSharedPreferences());
+		updateUsagePreference(getPreferenceScreen().getSharedPreferences());
+		updateTopupsPreference(getPreferenceScreen().getSharedPreferences());
 
 		updateFrequencyPreference = getPreferenceScreen().findPreference("update_frequency");
-		updateFrequencyPreference.setSummary(getString(R.string.settings_frequency,
-				((ListPreference) updateFrequencyPreference).getEntry()));
+		updateFrequencyPreference();
 	}
 
 	@Override
@@ -59,24 +61,40 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		// TODO if all auto-preferences are disabled, stop session (broadcast an intent -- BroadcastReceiver as inner
+		// class of service, so we can stopSelf)
 		if (key.equals("auto_credit")) {
-			autoCreditPreference
-					.setSummary(sharedPreferences.getBoolean(key, false) ? getString(R.string.settings_auto_credit_enabled)
-							: getString(R.string.settings_auto_credit_disabled));
+			updateCreditPreference(sharedPreferences);
 		} else if (key.equals("auto_usage")) {
-			sharedPreferences.getBoolean(key, false);
-			autoUsagePreference
-					.setSummary(sharedPreferences.getBoolean(key, false) ? getString(R.string.settings_auto_usage_enabled)
-							: getString(R.string.settings_auto_usage_disabled));
+			updateUsagePreference(sharedPreferences);
 		} else if (key.equals("auto_topups")) {
-			sharedPreferences.getBoolean(key, false);
-			autoTopupsPreference
-					.setSummary(sharedPreferences.getBoolean(key, false) ? getString(R.string.settings_auto_topups_enabled)
-							: getString(R.string.settings_auto_topups_disabled));
+			updateTopupsPreference(sharedPreferences);
 		} else if (key.equals("update_frequency")) {
-			updateFrequencyPreference.setSummary(getString(R.string.settings_frequency,
-					((ListPreference) updateFrequencyPreference).getEntry()));
+			updateFrequencyPreference();
 		}
+	}
+
+	private void updateCreditPreference(SharedPreferences sharedPreferences) {
+		boolean autoCredit = sharedPreferences.getBoolean("auto_credit", false);
+		autoCreditPreference.setSummary(autoCredit ? getString(R.string.settings_auto_credit_enabled)
+				: getString(R.string.settings_auto_credit_disabled));
+	}
+
+	private void updateUsagePreference(SharedPreferences sharedPreferences) {
+		boolean autoUsage = sharedPreferences.getBoolean("auto_usage", false);
+		autoUsagePreference.setSummary(autoUsage ? getString(R.string.settings_auto_usage_enabled)
+				: getString(R.string.settings_auto_usage_disabled));
+	}
+
+	private void updateTopupsPreference(SharedPreferences sharedPreferences) {
+		boolean autoTopups = sharedPreferences.getBoolean("auto_topups", false);
+		autoTopupsPreference.setSummary(autoTopups ? getString(R.string.settings_auto_topups_enabled)
+				: getString(R.string.settings_auto_topups_disabled));
+	}
+
+	private void updateFrequencyPreference() {
+		updateFrequencyPreference.setSummary(getString(R.string.settings_frequency,
+				((ListPreference) updateFrequencyPreference).getEntry()));
 	}
 
 }

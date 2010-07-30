@@ -19,35 +19,19 @@ package be.benvd.mvforandroid;
 
 import my.android.app.TabActivity;
 import my.android.widget.TabHost;
-import android.content.ComponentName;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.util.Log;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
-import be.benvd.mvforandroid.data.MVDataService;
+import be.benvd.mvforandroid.data.OnAlarmReceiver;
 
 public class MainActivity extends TabActivity {
 
-	private MVDataService dataService;
-
-	/**
-	 * Called when the MVDataService is bound to / unbound from the Activity.
-	 */
-	private ServiceConnection onService = new ServiceConnection() {
-		public void onServiceConnected(ComponentName className, IBinder rawBinder) {
-			Log.d("MVFA", "Service bound to activity.");
-			dataService = ((MVDataService.LocalBinder) rawBinder).getService();
-		}
-
-		public void onServiceDisconnected(ComponentName className) {
-			Log.d("MVFA", "Service disconnected.");
-			dataService = null;
-		}
-	};
+	public static final String TAG = "MVFA";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -56,18 +40,17 @@ public class MainActivity extends TabActivity {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.main);
 
-		// Binding the Activity to our MVDataService
-		bindService(new Intent(this, MVDataService.class), onService, BIND_AUTO_CREATE);
-
 		setupTabHost();
+
+		Intent i = new Intent(this, OnAlarmReceiver.class);
+		PendingIntent wakefulWorkIntent = PendingIntent.getBroadcast(this, 0, i, 0);
+		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+		am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 5000, wakefulWorkIntent);
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-
-		// Unbind the Service
-		unbindService(onService);
 	}
 
 	@Override

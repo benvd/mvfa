@@ -173,6 +173,11 @@ public class CreditActivity extends Activity {
 
 	class CreditAdapter extends SackOfViewsAdapter {
 
+		private static final int REMAINING_CREDIT = 0;
+		private static final int REMAINING_SMS = 1;
+		private static final int REMAINING_DATA = 2;
+		private static final int VALID_UNTIL = 3;
+
 		public CreditAdapter(int count) {
 			super(count);
 		}
@@ -180,7 +185,7 @@ public class CreditActivity extends Activity {
 		@Override
 		protected View newView(int position, ViewGroup parent) {
 			switch (position) {
-				case 0: {
+				case REMAINING_CREDIT: {
 					double remainingCredit = helper.credit.getRemainingCredit();
 					View view = getLayoutInflater().inflate(R.layout.credit_credit, parent, false);
 					TextView text = (TextView) view.findViewById(R.id.credit_text);
@@ -189,9 +194,12 @@ public class CreditActivity extends Activity {
 					float ratio = ((float) remainingCredit / helper.credit.getPricePlan());
 					view.setBackgroundDrawable(getProgressBackground(ratio));
 
+					if (ratio < 0.10)
+						text.setTextColor(0xff561515);
+
 					return view;
 				}
-				case 1: {
+				case REMAINING_SMS: {
 					int remainingSms = helper.credit.getRemainingSms();
 					View view = getLayoutInflater().inflate(R.layout.credit_sms, parent, false);
 					TextView text = (TextView) view.findViewById(R.id.sms_text);
@@ -200,9 +208,12 @@ public class CreditActivity extends Activity {
 					float ratio = ((float) remainingSms / 1000);
 					view.setBackgroundDrawable(getProgressBackground(ratio));
 
+					if (ratio < 0.10)
+						text.setTextColor(0xff561515);
+
 					return view;
 				}
-				case 2: {
+				case REMAINING_DATA: {
 					int remainingBytes = helper.credit.getRemainingData();
 					View view = getLayoutInflater().inflate(R.layout.credit_data, parent, false);
 					TextView text = (TextView) view.findViewById(R.id.data_text);
@@ -211,13 +222,17 @@ public class CreditActivity extends Activity {
 					float ratio = ((float) remainingBytes / 1073741824);
 					view.setBackgroundDrawable(getProgressBackground(ratio));
 
+					if (ratio < 0.10)
+						text.setTextColor(0xff561515);
+
 					return view;
 				}
-				case 3: {
+				case VALID_UNTIL: {
 					View view = getLayoutInflater().inflate(R.layout.credit_valid, parent, false);
 					TextView text = (TextView) view.findViewById(R.id.valid_text);
 					text.setText(getString(R.string.valid_until) + " "
 							+ formatValidUntilDate(helper.credit.getValidUntil()));
+
 					return view;
 				}
 			}

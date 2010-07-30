@@ -61,7 +61,6 @@ public class UsageActivity extends Activity {
 
 	public DatabaseHelper helper;
 
-	// TODO Store this in the preferences (but not through SettingsActivity -- just remember it for later).
 	private boolean ascending = true;
 
 	private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -113,11 +112,12 @@ public class UsageActivity extends Activity {
 				text.setText(formatDate(timestamp));
 				adapter.addView(separator);
 				adapter.addAdapter(new UsageSectionAdapter(usageByDay));
+				usageByDay.close();
 			}
 		}
 		usageList.setAdapter(adapter);
 
-		usageList.setOnItemClickListener(new OnItemClickListener() {
+		OnItemClickListener onItemClickListener = new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				Cursor c = helper.usage.get(id);
@@ -141,7 +141,8 @@ public class UsageActivity extends Activity {
 				}
 				c.close();
 			}
-		});
+		};
+		usageList.setOnItemClickListener(onItemClickListener);
 	}
 
 	public static String getContactIdFromNumber(Context context, String number) {
@@ -229,6 +230,7 @@ public class UsageActivity extends Activity {
 		switch (item.getItemId()) {
 			case R.id.change_asc_desc: {
 				ascending = !ascending;
+				// TODO store ascending in prefs
 				updateView();
 				return true;
 			}

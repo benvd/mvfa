@@ -29,19 +29,19 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Binder;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import be.benvd.mvforandroid.MainActivity;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class MVDataService extends WakefulIntentService {
 
-	public final String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json";
-	public final String URL_CREDIT = "https://mobilevikings.com/api/2.0/basic/sim_balance.json?add_price_plan=1";
-	public final String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
+	public final static String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json";
+	public final static String URL_CREDIT = "https://mobilevikings.com/api/2.0/basic/sim_balance.json?add_price_plan=1";
+	public final static String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
 
 	private static final long RETRY_TIMEOUT = 30000;
 
@@ -54,21 +54,14 @@ public class MVDataService extends WakefulIntentService {
 	private Intent usageBroadcast = new Intent(USAGE_UPDATED);
 	private Intent topupsBroadcast = new Intent(TOPUPS_UPDATED);
 
-	private IBinder binder;
 	private AlarmManager alarm = null;
 	private PendingIntent wakefulWorkIntent = null;
 	private SharedPreferences prefs;
 	private DatabaseHelper helper;
 
-	public class LocalBinder extends Binder {
-		public MVDataService getService() {
-			return MVDataService.this;
-		}
-	}
-
 	@Override
 	public IBinder onBind(Intent arg0) {
-		return binder;
+		return null;
 	}
 
 	public MVDataService() {
@@ -78,7 +71,6 @@ public class MVDataService extends WakefulIntentService {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		binder = new LocalBinder();
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		helper = new DatabaseHelper(this);
 		alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -94,7 +86,7 @@ public class MVDataService extends WakefulIntentService {
 	private void scheduleNextUpdate() {
 		long delay = Long.parseLong(prefs.getString("update_frequency", "86400000"));
 		alarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + delay, wakefulWorkIntent);
-		Log.d("MVDataService", "Scheduled update in " + delay + "ms.");
+		Log.d(MainActivity.TAG, "Scheduled update in " + delay + "ms.");
 	}
 
 	/**
@@ -121,19 +113,17 @@ public class MVDataService extends WakefulIntentService {
 				updateUsage();
 				updateTopups();
 			} catch (ClientProtocolException e) {
-				Log.e("MVDataService", "Exception in doWakefulWork", e);
+				Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
 				retry();
 			} catch (IOException e) {
-				Log.e("MVDataService", "Exception in doWakefulWork", e);
+				Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
 				retry();
 			} catch (JSONException e) {
-				Log.e("MVDataService", "Exception in doWakefulWork", e);
+				Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
 				retry();
 			} finally {
 				helper.close();
 			}
-
-			scheduleNextUpdate();
 		}
 	}
 
@@ -144,7 +134,7 @@ public class MVDataService extends WakefulIntentService {
 			String response = MVDataHelper.getTestResponse(username, password, URL_CREDIT);
 			helper.credit.update(new JSONObject(response));
 			sendBroadcast(creditBroadcast);
-			Log.i("MVDataService", "Updated credit");
+			Log.i(MainActivity.TAG, "Updated credit");
 		}
 	}
 
@@ -155,7 +145,7 @@ public class MVDataService extends WakefulIntentService {
 			String response = MVDataHelper.getTestResponse(username, password, URL_USAGE);
 			helper.usage.update(new JSONArray(response), false);
 			sendBroadcast(usageBroadcast);
-			Log.i("MVDataService", "Updated usage");
+			Log.i(MainActivity.TAG, "Updated usage");
 		}
 	}
 
@@ -166,7 +156,7 @@ public class MVDataService extends WakefulIntentService {
 			String response = MVDataHelper.getTestResponse(username, password, URL_TOPUPS);
 			helper.topups.update(new JSONArray(response), false);
 			sendBroadcast(topupsBroadcast);
-			Log.i("MVDataService", "Updated topups");
+			Log.i(MainActivity.TAG, "Updated topups");
 		}
 	}
 
