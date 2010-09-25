@@ -49,7 +49,6 @@ class Switcher extends FrameLayout {
 
 	private GestureDetector mGestureDetector;
 	private int mCurrentView;
-	private View mChild, mHistoryView;
 	private View children[];
 
 	private int mWidth;
@@ -58,11 +57,6 @@ class Switcher extends FrameLayout {
 
 	private TranslateAnimation inRight;
 	private TranslateAnimation outRight;
-
-	private static final int NONE = 1;
-	private static final int LEFT = 2;
-	private static final int RIGHT = 3;
-	private int mPreviousMove;
 
 	public Switcher(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -129,7 +123,6 @@ class Switcher extends FrameLayout {
 				if (mCurrentView < MyTabHost.getTabWidget().getTabCount() - 1) {
 					MyTabHost.setCurrentTab(mCurrentView + 1);
 					// mCurrentView++;
-					mPreviousMove = LEFT;
 				}
 			} else {
 				if (mCurrentView < children.length - 1 /* && mPreviousMove != LEFT */) {
@@ -139,7 +132,6 @@ class Switcher extends FrameLayout {
 					children[mCurrentView].setVisibility(View.GONE);
 
 					mCurrentView++;
-					mPreviousMove = LEFT;
 				}
 			}
 		} catch (Exception e) {
@@ -155,7 +147,6 @@ class Switcher extends FrameLayout {
 				if (mCurrentView > 0) {
 					MyTabHost.setCurrentTab(mCurrentView - 1);
 					// mCurrentView--;
-					mPreviousMove = RIGHT;
 				}
 			} else {
 				if (mCurrentView > 0 /* && mPreviousMove != RIGHT */) {
@@ -165,7 +156,6 @@ class Switcher extends FrameLayout {
 					children[mCurrentView].setVisibility(View.GONE);
 
 					mCurrentView--;
-					mPreviousMove = RIGHT;
 				}
 			}
 		} catch (Exception e) {
