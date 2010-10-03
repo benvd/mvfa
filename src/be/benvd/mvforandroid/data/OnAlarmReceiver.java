@@ -29,7 +29,7 @@ public class OnAlarmReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Intent i = new Intent(context.getApplicationContext(), MVDataService.class);
-		i.setAction(MVDataService.UPDATE_ACTION);
+		i.setAction(MVDataService.UPDATE_ALL);
 		WakefulIntentService.sendWakefulWork(context, i);
 	}
 

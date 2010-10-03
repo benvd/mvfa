@@ -107,7 +107,7 @@ public class UsageActivity extends Activity {
 				timestampEnd = timestamp + 86400000; // Begin of the day + one day in millis = end of the day
 
 				Cursor usageByDay = helper.usage.getBetween(false, timestamp, timestampEnd, ascending);
-				View separator = getLayoutInflater().inflate(R.layout.credit_separator, null, false);
+				View separator = getLayoutInflater().inflate(R.layout.usage_separator, null, false);
 				TextView text = (TextView) separator.findViewById(R.id.separator_text);
 				text.setText(formatDate(timestamp));
 				adapter.addView(separator);
@@ -150,8 +150,8 @@ public class UsageActivity extends Activity {
 		String[] projection = new String[] { Contacts.People._ID };
 
 		// encode the phone number and build the filter URI
-		Uri contactUri = Uri.withAppendedPath(Contacts.People.CONTENT_FILTER_URI,
-				Uri.encode(getContactNameFromNumber(context, number)));
+		Uri contactUri = Uri.withAppendedPath(Contacts.People.CONTENT_FILTER_URI, Uri.encode(getContactNameFromNumber(
+				context, number)));
 
 		// query time
 		Cursor c = context.getContentResolver().query(contactUri, projection, null, null, null);

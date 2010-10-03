@@ -59,6 +59,8 @@
 		name="sms_remaining">SMS\'s remaining</string>
 	<string
 		name="valid_until">Valid until</string>
+	<string
+		name="price_plan">Plan</string>
 
 
 	<string

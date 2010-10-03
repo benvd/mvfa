@@ -31,6 +31,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 public class MVDataHelper {
 
+	public static final String PRICE_PLAN_TOPUP_AMOUNT = "price_plan_topup_amount";
+	public static final String PRICE_PLAN_DATA_AMOUNT = "price_plan_data_amount";
+	public static final String PRICE_PLAN_SMS_AMOUNT = "price_plan_sms_amount";
+	public static final String PRICE_PLAN_NAME = "price_plan_name";
+
 	/**
 	 * Returns the GET response of the given url.
 	 * 
@@ -81,9 +86,10 @@ public class MVDataHelper {
 			return "[    {        \"status\": \"Top-up done\",         \"amount\": \""
 					+ new Random().nextInt(40)
 					+ "\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-06-21 21:38:33\",         \"method\": \"Ogone\",         \"payment_received_on\": \"2010-06-21 21:38:32\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-05-01 11:28:36\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2010-05-01 11:24:01\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-03-17 19:07:46\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2010-03-17 19:07:41\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-02-15 12:42:52\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2010-02-15 12:42:40\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2010-01-07 14:49:00\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2010-01-07 14:48:51\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-12-04 00:45:43\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-12-04 00:45:30\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-10-28 10:23:30\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-10-28 10:23:17\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-09-28 08:03:00\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-09-28 08:03:00\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-08-27 22:35:39\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-08-27 22:35:39\"    },     {        \"status\": \"Top-up done\",         \"amount\": \"15.00\",         \"amount_ex_vat\": \"12.40\",         \"executed_on\": \"2009-07-27 13:17:45\",         \"method\": \"PayPal\",         \"payment_received_on\": \"2009-07-27 13:17:45\"    }]";
+		} else if (url.equals(MVDataService.URL_PRICE_PLAN)) {
+			return "{    \"prices\": [        {            \"amount\": \"0.24\",             \"type\": \"Voice call\",             \"type_id\": 1        },         {            \"amount\": \"2.50\",             \"type\": \"Data sessions (GPRS)\",             \"type_id\": 2        },         {            \"amount\": \"0.10\",             \"type\": \"SMS\",             \"type_id\": 5        },         {            \"amount\": \"0.24\",             \"type\": \"MMS\",             \"type_id\": 7        }    ],     \"bundles\": [        {            \"amount\": 1000,             \"type\": \"SMS\",             \"type_id\": 5        },         {            \"amount\": 2048,             \"type\": \"Data sessions (GPRS)\",             \"type_id\": 2        }    ],     \"name\": \"Classic\",     \"top_up_amount\": \"15.00\"}";
 		} else {
 			return "";
 		}
 	}
-
 }

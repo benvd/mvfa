@@ -58,7 +58,8 @@ public class TabActivity extends ActivityGroup {
 	/**
 	 * Sets the default tab that is the first tab highlighted.
 	 * 
-	 * @param tag the name of the default tab
+	 * @param tag
+	 *            the name of the default tab
 	 */
 	public void setDefaultTab(String tag) {
 		mDefaultTab = tag;
@@ -68,7 +69,8 @@ public class TabActivity extends ActivityGroup {
 	/**
 	 * Sets the default tab that is the first tab highlighted.
 	 * 
-	 * @param index the index of the default tab
+	 * @param index
+	 *            the index of the default tab
 	 */
 	public void setDefaultTab(int index) {
 		mDefaultTab = null;
@@ -86,10 +88,9 @@ public class TabActivity extends ActivityGroup {
 		if (mTabHost.getCurrentTab() < 0) {
 			if (mDefaultTab != null) {
 				mTabHost.setCurrentTabByTag(mDefaultTab);
-			} else
-				if (mDefaultTabIndex >= 0) {
-					mTabHost.setCurrentTab(mDefaultTabIndex);
-				}
+			} else if (mDefaultTabIndex >= 0) {
+				mTabHost.setCurrentTab(mDefaultTabIndex);
+			}
 		}
 	}
 

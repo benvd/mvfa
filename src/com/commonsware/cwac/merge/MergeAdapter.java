@@ -43,7 +43,8 @@ public class MergeAdapter extends BaseAdapter {
 	/**
 	 * Adds a new adapter to the roster of things to appear in the aggregate list.
 	 * 
-	 * @param adapter Source for row views for this section
+	 * @param adapter
+	 *            Source for row views for this section
 	 */
 	public void addAdapter(ListAdapter adapter) {
 		pieces.add(adapter);
@@ -52,7 +53,8 @@ public class MergeAdapter extends BaseAdapter {
 	/**
 	 * Adds a new View to the roster of things to appear in the aggregate list.
 	 * 
-	 * @param view Single view to add
+	 * @param view
+	 *            Single view to add
 	 */
 	public void addView(View view) {
 		ArrayList<View> list = new ArrayList<View>(1);
@@ -65,7 +67,8 @@ public class MergeAdapter extends BaseAdapter {
 	/**
 	 * Adds a list of views to the roster of things to appear in the aggregate list.
 	 * 
-	 * @param views List of views to add
+	 * @param views
+	 *            List of views to add
 	 */
 	public void addViews(List<View> views) {
 		pieces.add(new SackOfViewsAdapter(views));
@@ -74,7 +77,8 @@ public class MergeAdapter extends BaseAdapter {
 	/**
 	 * Get the data item associated with the specified position in the data set.
 	 * 
-	 * @param position Position of the item whose data we want
+	 * @param position
+	 *            Position of the item whose data we want
 	 */
 	@Override
 	public Object getItem(int position) {
@@ -122,7 +126,8 @@ public class MergeAdapter extends BaseAdapter {
 	/**
 	 * Get the type of View that will be created by getView() for the specified item.
 	 * 
-	 * @param position Position of the item whose data we want
+	 * @param position
+	 *            Position of the item whose data we want
 	 */
 	@Override
 	public int getItemViewType(int position) {
@@ -155,7 +160,8 @@ public class MergeAdapter extends BaseAdapter {
 	/**
 	 * Returns true if the item at the specified position is not a separator.
 	 * 
-	 * @param position Position of the item whose data we want
+	 * @param position
+	 *            Position of the item whose data we want
 	 */
 	@Override
 	public boolean isEnabled(int position) {
@@ -175,9 +181,12 @@ public class MergeAdapter extends BaseAdapter {
 	/**
 	 * Get a View that displays the data at the specified position in the data set.
 	 * 
-	 * @param position Position of the item whose data we want
-	 * @param convertView View to recycle, if not null
-	 * @param parent ViewGroup containing the returned View
+	 * @param position
+	 *            Position of the item whose data we want
+	 * @param convertView
+	 *            View to recycle, if not null
+	 * @param parent
+	 *            ViewGroup containing the returned View
 	 */
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
@@ -198,7 +207,8 @@ public class MergeAdapter extends BaseAdapter {
 	/**
 	 * Get the row id associated with the specified position in the list.
 	 * 
-	 * @param position Position of the item whose data we want
+	 * @param position
+	 *            Position of the item whose data we want
 	 */
 	@Override
 	public long getItemId(int position) {

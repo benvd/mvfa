@@ -91,7 +91,8 @@ public class TabWidget extends LinearLayout implements OnFocusChangeListener {
 	/**
 	 * Returns the tab indicator view at the given index.
 	 * 
-	 * @param index the zero-based index of the tab indicator view to return
+	 * @param index
+	 *            the zero-based index of the tab indicator view to return
 	 * @return the tab indicator view at the given index
 	 */
 	public View getChildTabViewAt(int index) {
@@ -123,7 +124,8 @@ public class TabWidget extends LinearLayout implements OnFocusChangeListener {
 	/**
 	 * Sets the drawable to use as a divider between the tab indicators.
 	 * 
-	 * @param drawable the divider drawable
+	 * @param drawable
+	 *            the divider drawable
 	 */
 	public void setDividerDrawable(Drawable drawable) {
 		mDividerDrawable = drawable;
@@ -132,7 +134,8 @@ public class TabWidget extends LinearLayout implements OnFocusChangeListener {
 	/**
 	 * Sets the drawable to use as a divider between the tab indicators.
 	 * 
-	 * @param resId the resource identifier of the drawable to use as a divider.
+	 * @param resId
+	 *            the resource identifier of the drawable to use as a divider.
 	 */
 	public void setDividerDrawable(int resId) {
 		mDividerDrawable = mContext.getResources().getDrawable(resId);
@@ -143,7 +146,8 @@ public class TabWidget extends LinearLayout implements OnFocusChangeListener {
 	 * user specifies a custom view for the tab indicators, then the TabHost class calls this method to disable drawing
 	 * of the bottom strips.
 	 * 
-	 * @param drawBottomStrips true if the bottom strips should be drawn.
+	 * @param drawBottomStrips
+	 *            true if the bottom strips should be drawn.
 	 */
 	void setDrawBottomStrips(boolean drawBottomStrips) {
 		mDrawBottomStrips = drawBottomStrips;
@@ -181,8 +185,8 @@ public class TabWidget extends LinearLayout implements OnFocusChangeListener {
 			final int myHeight = getHeight();
 			mBottomLeftStrip.setBounds(Math.min(0, selBounds.left - mBottomLeftStrip.getIntrinsicWidth()), myHeight
 					- mBottomLeftStrip.getIntrinsicHeight(), selBounds.left, getHeight());
-			mBottomRightStrip.setBounds(selBounds.right, myHeight - mBottomRightStrip.getIntrinsicHeight(),
-					Math.max(getWidth(), selBounds.right + mBottomRightStrip.getIntrinsicWidth()), myHeight);
+			mBottomRightStrip.setBounds(selBounds.right, myHeight - mBottomRightStrip.getIntrinsicHeight(), Math.max(
+					getWidth(), selBounds.right + mBottomRightStrip.getIntrinsicWidth()), myHeight);
 			mStripMoved = false;
 		}
 
@@ -205,7 +209,8 @@ public class TabWidget extends LinearLayout implements OnFocusChangeListener {
 	 * takes care of adjusting the focus, so unless you're circumventing the UI, you'll probably just focus your
 	 * interest here.
 	 * 
-	 * @param index The tab that you want to indicate as the selected tab (tab brought to the front of the widget)
+	 * @param index
+	 *            The tab that you want to indicate as the selected tab (tab brought to the front of the widget)
 	 * 
 	 * @see #focusCurrentTab
 	 */
@@ -226,7 +231,8 @@ public class TabWidget extends LinearLayout implements OnFocusChangeListener {
 	 * UI is responsible for calling TabWidget.onFocusChanged(), but in the case where we are selecting the tab
 	 * programmatically, we'll need to make sure focus keeps up.
 	 * 
-	 * @param index The tab that you want focused (highlighted in orange) and selected (tab brought to the front of the
+	 * @param index
+	 *            The tab that you want focused (highlighted in orange) and selected (tab brought to the front of the
 	 *            widget)
 	 * 
 	 * @see #setCurrentTab
@@ -332,8 +338,10 @@ public class TabWidget extends LinearLayout implements OnFocusChangeListener {
 		 * Informs the TabHost which tab was selected. It also indicates if the tab was clicked/pressed or just focused
 		 * into.
 		 * 
-		 * @param tabIndex index of the tab that was selected
-		 * @param clicked whether the selection changed due to a touch/click or due to focus entering the tab through
+		 * @param tabIndex
+		 *            index of the tab that was selected
+		 * @param clicked
+		 *            whether the selection changed due to a touch/click or due to focus entering the tab through
 		 *            navigation. Pass true if it was due to a press/click and false otherwise.
 		 */
 		void onTabSelectionChanged(int tabIndex, boolean clicked);

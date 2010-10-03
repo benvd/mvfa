@@ -21,39 +21,40 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import be.benvd.mvforandroid.data.DatabaseHelper;
+import be.benvd.mvforandroid.data.MVDataHelper;
 import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.sacklist.SackOfViewsAdapter;
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class CreditActivity extends Activity {
 
 	private DatabaseHelper helper;
+	private SharedPreferences prefs;
 
 	/**
 	 * Callback for the MVDataService.
@@ -62,6 +63,7 @@ public class CreditActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			updateView();
+			CreditActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
 		}
 	};
 
@@ -71,6 +73,7 @@ public class CreditActivity extends Activity {
 		setContentView(R.layout.credit);
 
 		helper = new DatabaseHelper(this);
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		updateView();
 
@@ -78,15 +81,27 @@ public class CreditActivity extends Activity {
 		updateButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				setProgressBarIndeterminateVisibility(true);
-				new UpdateCreditTask().execute();
+				CreditActivity.this.getParent().setProgressBarIndeterminateVisibility(true);
+				Intent i = new Intent(CreditActivity.this, MVDataService.class);
+				i.setAction(MVDataService.UPDATE_CREDIT);
+				WakefulIntentService.sendWakefulWork(CreditActivity.this, i);
+			}
+		});
+
+		Button topupButton = (Button) findViewById(R.id.topup_button);
+		topupButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Uri uri = Uri.parse("https://mobilevikings.com/en/myviking/topup/add/");
+				Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
+				startActivity(browserIntent);
 			}
 		});
 	}
 
 	private void updateView() {
 		ListView list = (ListView) findViewById(R.id.credit_list);
-		list.setAdapter(new CreditAdapter(4));
+		list.setAdapter(new CreditAdapter());
 	}
 
 	@Override
@@ -139,47 +154,16 @@ public class CreditActivity extends Activity {
 		return validUntilFormat.format(new Date(validUntil));
 	}
 
-	// TODO handle rotation
-
-	public class UpdateCreditTask extends AsyncTask<Void, Void, Void> {
-
-		@Override
-		protected Void doInBackground(Void... params) {
-			try {
-				String response = getCreditResponse();
-				helper.credit.update(new JSONObject(response));
-			} catch (JSONException e) {
-				Log.e("MVFA", "Exception in doInBackground", e);
-			}
-			return null;
-		}
-
-		private String getCreditResponse() {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				Log.e("MVFA", "Exception in getCreditResponse", e);
-			}
-			return "{\"valid_until\": \"2010-08-16 13:24:00\", \"data\": 753741824, \"sms\": 869, \"credits\": \"6.59\", \"price_plan\": \"Classic\", \"is_expired\": false}";
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			updateView();
-			setProgressBarIndeterminateVisibility(false);
-		}
-
-	}
-
 	class CreditAdapter extends SackOfViewsAdapter {
 
+		private static final int NUM_ROWS = 4;
 		private static final int REMAINING_CREDIT = 0;
 		private static final int REMAINING_SMS = 1;
 		private static final int REMAINING_DATA = 2;
 		private static final int VALID_UNTIL = 3;
 
-		public CreditAdapter(int count) {
-			super(count);
+		public CreditAdapter() {
+			super(NUM_ROWS);
 		}
 
 		@Override
@@ -191,7 +175,7 @@ public class CreditActivity extends Activity {
 					TextView text = (TextView) view.findViewById(R.id.credit_text);
 					text.setText(formatCurrency(remainingCredit) + " " + getString(R.string.remaining));
 
-					float ratio = ((float) remainingCredit / helper.credit.getPricePlan());
+					float ratio = ((float) remainingCredit / prefs.getFloat(MVDataHelper.PRICE_PLAN_TOPUP_AMOUNT, 15));
 					view.setBackgroundDrawable(getProgressBackground(ratio));
 
 					if (ratio < 0.10)
@@ -205,7 +189,7 @@ public class CreditActivity extends Activity {
 					TextView text = (TextView) view.findViewById(R.id.sms_text);
 					text.setText(remainingSms + " " + getString(R.string.sms_remaining));
 
-					float ratio = ((float) remainingSms / 1000);
+					float ratio = ((float) remainingSms / prefs.getInt(MVDataHelper.PRICE_PLAN_SMS_AMOUNT, 1000));
 					view.setBackgroundDrawable(getProgressBackground(ratio));
 
 					if (ratio < 0.10)
@@ -214,12 +198,13 @@ public class CreditActivity extends Activity {
 					return view;
 				}
 				case REMAINING_DATA: {
-					int remainingBytes = helper.credit.getRemainingData();
+					long remainingBytes = helper.credit.getRemainingData();
 					View view = getLayoutInflater().inflate(R.layout.credit_data, parent, false);
 					TextView text = (TextView) view.findViewById(R.id.data_text);
 					text.setText((remainingBytes / 1048576) + " " + getString(R.string.megabytes_remaining));
 
-					float ratio = ((float) remainingBytes / 1073741824);
+					double ratio = ((double) remainingBytes / ((long) prefs.getInt(MVDataHelper.PRICE_PLAN_DATA_AMOUNT,
+							1024) * 1024 * 1024));
 					view.setBackgroundDrawable(getProgressBackground(ratio));
 
 					if (ratio < 0.10)
@@ -228,10 +213,16 @@ public class CreditActivity extends Activity {
 					return view;
 				}
 				case VALID_UNTIL: {
-					View view = getLayoutInflater().inflate(R.layout.credit_valid, parent, false);
-					TextView text = (TextView) view.findViewById(R.id.valid_text);
-					text.setText(getString(R.string.valid_until) + " "
+					View view = getLayoutInflater().inflate(R.layout.credit_extra, parent, false);
+					TextView validText = (TextView) view.findViewById(R.id.valid_until);
+					validText.setText(getString(R.string.valid_until) + " "
 							+ formatValidUntilDate(helper.credit.getValidUntil()));
+
+					TextView planText = (TextView) view.findViewById(R.id.price_plan);
+					String planName = prefs.getString(MVDataHelper.PRICE_PLAN_NAME, null);
+					if (planName == null)
+						planText.setVisibility(View.GONE);
+					planText.setText(getString(R.string.price_plan) + ": " + planName);
 
 					return view;
 				}

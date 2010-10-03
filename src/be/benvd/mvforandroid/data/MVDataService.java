@@ -29,6 +29,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -42,10 +43,15 @@ public class MVDataService extends WakefulIntentService {
 	public final static String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json";
 	public final static String URL_CREDIT = "https://mobilevikings.com/api/2.0/basic/sim_balance.json?add_price_plan=1";
 	public final static String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
+	public static final String URL_PRICE_PLAN = "https://mobilevikings.com/api/2.0/basic/price_plan_details.json";
 
 	private static final long RETRY_TIMEOUT = 30000;
 
-	public static final String UPDATE_ACTION = "be.benvd.mvforandroid.data.Update";
+	public static final String UPDATE_ALL = "be.benvd.mvforandroid.data.Update";
+	public static final String UPDATE_CREDIT = "be.benvd.mvforandroid.data.UpdateCredit";
+	public static final String UPDATE_USAGE = "be.benvd.mvforandroid.data.UpdateUsage";
+	public static final String UPDATE_TOPUPS = "be.benvd.mvforandroid.data.UpdateTopups";
+
 	public static final String CREDIT_UPDATED = "be.benvd.mvforandroid.data.CreditUpdated";
 	public static final String USAGE_UPDATED = "be.benvd.mvforandroid.data.UsageUpdated";
 	public static final String TOPUPS_UPDATED = "be.benvd.mvforandroid.data.TopupsUpdated";
@@ -100,6 +106,7 @@ public class MVDataService extends WakefulIntentService {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		helper.close();
 	}
 
 	/**
@@ -107,57 +114,77 @@ public class MVDataService extends WakefulIntentService {
 	 */
 	@Override
 	protected void doWakefulWork(Intent intent) {
-		if (intent.getAction().equals(UPDATE_ACTION)) {
-			try {
+		String action = intent.getAction();
+		try {
+			if (action.equals(UPDATE_CREDIT)) {
 				updateCredit();
-				updateUsage();
+			} else if (action.equals(UPDATE_TOPUPS)) {
 				updateTopups();
-			} catch (ClientProtocolException e) {
-				Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
-				retry();
-			} catch (IOException e) {
-				Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
-				retry();
-			} catch (JSONException e) {
-				Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
-				retry();
-			} finally {
-				helper.close();
+			} else if (action.equals(UPDATE_USAGE)) {
+				updateUsage();
+			} else if (action.equals(UPDATE_ALL)) {
+				if (prefs.getBoolean("auto_credit", false))
+					updateCredit();
+				if (prefs.getBoolean("auto_usage", false))
+					updateUsage();
+				if (prefs.getBoolean("auto_topups", false))
+					updateTopups();
 			}
+		} catch (ClientProtocolException e) {
+			Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
+			retry();
+		} catch (IOException e) {
+			Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
+			retry();
+		} catch (JSONException e) {
+			Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
+			retry();
 		}
+	}
+
+	private void updatePricePlan() throws ClientProtocolException, IOException, JSONException {
+		String username = prefs.getString("username", null);
+		String password = prefs.getString("password", null);
+		String response = MVDataHelper.getTestResponse(username, password, URL_PRICE_PLAN);
+		JSONObject json = new JSONObject(response);
+		Editor edit = prefs.edit();
+		edit.putString(MVDataHelper.PRICE_PLAN_NAME, json.getString("name"));
+		edit.putInt(MVDataHelper.PRICE_PLAN_SMS_AMOUNT, json.getJSONArray("bundles").getJSONObject(0).getInt("amount"));
+		edit
+				.putInt(MVDataHelper.PRICE_PLAN_DATA_AMOUNT, json.getJSONArray("bundles").getJSONObject(1).getInt(
+						"amount"));
+		edit.putFloat(MVDataHelper.PRICE_PLAN_TOPUP_AMOUNT, Float.parseFloat(json.getString("top_up_amount")));
+		edit.commit();
+		Log.v("DEBUG", "" + prefs.getInt(MVDataHelper.PRICE_PLAN_DATA_AMOUNT, -1337));
+		Log.i(MainActivity.TAG, "Updated price plan");
 	}
 
 	private void updateCredit() throws ClientProtocolException, IOException, JSONException {
-		if (prefs.getBoolean("auto_credit", false)) {
-			String username = prefs.getString("username", null);
-			String password = prefs.getString("password", null);
-			String response = MVDataHelper.getTestResponse(username, password, URL_CREDIT);
-			helper.credit.update(new JSONObject(response));
-			sendBroadcast(creditBroadcast);
-			Log.i(MainActivity.TAG, "Updated credit");
-		}
+		updatePricePlan();
+		String username = prefs.getString("username", null);
+		String password = prefs.getString("password", null);
+		String response = MVDataHelper.getResponse(username, password, URL_CREDIT);
+		helper.credit.update(new JSONObject(response));
+		sendBroadcast(creditBroadcast);
+		Log.i(MainActivity.TAG, "Updated credit");
 	}
 
 	private void updateUsage() throws ClientProtocolException, IOException, JSONException {
-		if (prefs.getBoolean("auto_usage", false)) {
-			String username = prefs.getString("username", null);
-			String password = prefs.getString("password", null);
-			String response = MVDataHelper.getTestResponse(username, password, URL_USAGE);
-			helper.usage.update(new JSONArray(response), false);
-			sendBroadcast(usageBroadcast);
-			Log.i(MainActivity.TAG, "Updated usage");
-		}
+		String username = prefs.getString("username", null);
+		String password = prefs.getString("password", null);
+		String response = MVDataHelper.getTestResponse(username, password, URL_USAGE);
+		helper.usage.update(new JSONArray(response), false);
+		sendBroadcast(usageBroadcast);
+		Log.i(MainActivity.TAG, "Updated usage");
 	}
 
 	private void updateTopups() throws ClientProtocolException, IOException, JSONException {
-		if (prefs.getBoolean("auto_topups", false)) {
-			String username = prefs.getString("username", null);
-			String password = prefs.getString("password", null);
-			String response = MVDataHelper.getTestResponse(username, password, URL_TOPUPS);
-			helper.topups.update(new JSONArray(response), false);
-			sendBroadcast(topupsBroadcast);
-			Log.i(MainActivity.TAG, "Updated topups");
-		}
+		String username = prefs.getString("username", null);
+		String password = prefs.getString("password", null);
+		String response = MVDataHelper.getTestResponse(username, password, URL_TOPUPS);
+		helper.topups.update(new JSONArray(response), false);
+		sendBroadcast(topupsBroadcast);
+		Log.i(MainActivity.TAG, "Updated topups");
 	}
 
 }

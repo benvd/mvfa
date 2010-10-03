@@ -99,7 +99,8 @@ public class TabHost extends FrameLayout implements ViewTreeObserver.OnTouchMode
 	/**
 	 * Get a new {@link TabSpec} associated with this tab host.
 	 * 
-	 * @param tag required tag of tab.
+	 * @param tag
+	 *            required tag of tab.
 	 */
 	public TabSpec newTabSpec(String tag) {
 		return new TabSpec(tag);
@@ -164,7 +165,8 @@ public class TabHost extends FrameLayout implements ViewTreeObserver.OnTouchMode
 	 * 
 	 * This is done for you if you extend {@link my.android.app.TabActivity}.
 	 * 
-	 * @param activityGroup Used to launch activities for tab content.
+	 * @param activityGroup
+	 *            Used to launch activities for tab content.
 	 */
 	public void setup(LocalActivityManager activityGroup) {
 		setup();
@@ -205,7 +207,8 @@ public class TabHost extends FrameLayout implements ViewTreeObserver.OnTouchMode
 	/**
 	 * Add a tab.
 	 * 
-	 * @param tabSpec Specifies how to create the indicator and content.
+	 * @param tabSpec
+	 *            Specifies how to create the indicator and content.
 	 */
 	public void addTab(TabSpec tabSpec) {
 
@@ -350,7 +353,8 @@ public class TabHost extends FrameLayout implements ViewTreeObserver.OnTouchMode
 	/**
 	 * Register a callback to be invoked when the selected state of any of the items in this list changes
 	 * 
-	 * @param l The callback that will run
+	 * @param l
+	 *            The callback that will run
 	 */
 	public void setOnTabChangedListener(OnTabChangeListener l) {
 		mOnTabChangeListener = l;
@@ -404,7 +408,8 @@ public class TabHost extends FrameLayout implements ViewTreeObserver.OnTouchMode
 		/**
 		 * Callback to make the tab contents
 		 * 
-		 * @param tag Which tab was selected.
+		 * @param tag
+		 *            Which tab was selected.
 		 * @return The view to display the contents of the selected tab.
 		 */
 		View createTabContent(String tag);

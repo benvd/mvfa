@@ -19,6 +19,7 @@ package be.benvd.mvforandroid;
 
 import my.android.app.TabActivity;
 import my.android.widget.TabHost;
+import my.android.widget.TabHost.OnTabChangeListener;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -36,7 +37,6 @@ public class MainActivity extends TabActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// TODO Progress in subactivities: need to call the progress methods of the MainActivity.
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.main);
 
@@ -84,7 +84,12 @@ public class MainActivity extends TabActivity {
 		spec = tabHost.newTabSpec("topups").setIndicator(tabView).setContent(intent);
 		tabHost.addTab(spec);
 
-		tabHost.setCurrentTabByTag("topups");
+		tabHost.setOnTabChangedListener(new OnTabChangeListener() {
+			@Override
+			public void onTabChanged(String tabId) {
+				MainActivity.this.setProgressBarIndeterminateVisibility(false);
+			}
+		});
 	}
 
 	private View getTabView(int stringId) {

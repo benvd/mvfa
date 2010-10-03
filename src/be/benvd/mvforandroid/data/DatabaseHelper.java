@@ -60,7 +60,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				+ "received_on INTEGER NOT NULL, " + "status TEXT NOT NULL);");
 		db.execSQL("CREATE TABLE IF NOT EXISTS " + Credit.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ "valid_until INTEGER NULL, " + "expired INTEGER NOT NULL, " + "sms INTEGER NOT NULL, "
-				+ "data INTEGER NOT NULL, " + "credits REAL NOT NULL, " + "price_plan INTEGER NOT NULL);");
+				+ "data INTEGER NOT NULL, " + "credits REAL NOT NULL, " + "price_plan TEXT NOT NULL);");
 	}
 
 	@Override
@@ -95,10 +95,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			values.put("sms", Integer.parseInt(json.getString("sms")));
 			values.put("data", Long.parseLong(json.getString("data")));
 			values.put("credits", Double.parseDouble(json.getString("credits")));
-			if (json.getString("price_plan").equalsIgnoreCase("classic"))
-				values.put("price_plan", 15);
-			else
-				values.put("price_plan", 40);
+			values.put("price_plan", json.getString("price_plan"));
+
+			Log.v("DEBUG", "" + json.getString("data"));
 
 			if (query.getCount() == 0) {
 				// No credit info stored yet, insert a row
@@ -150,12 +149,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			return result;
 		}
 
-		public int getRemainingData() {
+		public long getRemainingData() {
 			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
-			int result;
+			long result;
 
 			if (c.moveToFirst())
-				result = c.getInt(4);
+				result = c.getLong(4);
 			else
 				result = 0;
 
@@ -206,8 +205,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		 * isSearch set to true will be removed beforehand, and vice versa.
 		 * 
 		 * @param jsonArray
-		 * @param isSearch Flag to determine whether the usage entries were obtained by searching (i.e. the user
-		 *            specified a given time period) or by auto updating (i.e. entries of the present day).
+		 * @param isSearch
+		 *            Flag to determine whether the usage entries were obtained by searching (i.e. the user specified a
+		 *            given time period) or by auto updating (i.e. entries of the present day).
 		 * @throws JSONException
 		 */
 		public void update(JSONArray jsonArray, boolean isSearch) throws JSONException {
@@ -249,10 +249,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		/**
 		 * Returns a cursor over the Usage table.
 		 * 
-		 * @param isSearch Whether to include usage records obtained by a search, or (xor) those obtained through
+		 * @param isSearch
+		 *            Whether to include usage records obtained by a search, or (xor) those obtained through
 		 *            auto-updating.
-		 * @param order The constant representing the field to order the cursor by.
-		 * @param ascending Whether the order should be ascending or descending.
+		 * @param order
+		 *            The constant representing the field to order the cursor by.
+		 * @param ascending
+		 *            Whether the order should be ascending or descending.
 		 */
 		public Cursor get(boolean isSearch, int order, boolean ascending) {
 			String orderBy = null;

@@ -10,7 +10,7 @@
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
-*/
+ */
 
 package com.commonsware.cwac.wakeful;
 
@@ -21,54 +21,52 @@ import android.os.PowerManager;
 
 abstract public class WakefulIntentService extends IntentService {
 	abstract protected void doWakefulWork(Intent intent);
-	
-	public static final String LOCK_NAME_STATIC="com.commonsware.cwac.wakeful.WakefulIntentService";
-	private static PowerManager.WakeLock lockStatic=null;
-	
+
+	public static final String LOCK_NAME_STATIC = "com.commonsware.cwac.wakeful.WakefulIntentService";
+	private static PowerManager.WakeLock lockStatic = null;
+
 	public static void acquireStaticLock(Context context) {
 		getLock(context).acquire();
 	}
-	
+
 	synchronized private static PowerManager.WakeLock getLock(Context context) {
-		if (lockStatic==null) {
-			PowerManager mgr=(PowerManager)context.getSystemService(Context.POWER_SERVICE);
-			
-			lockStatic=mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-														LOCK_NAME_STATIC);
+		if (lockStatic == null) {
+			PowerManager mgr = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+
+			lockStatic = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, LOCK_NAME_STATIC);
 			lockStatic.setReferenceCounted(true);
 		}
-		
-		return(lockStatic);
+
+		return (lockStatic);
 	}
-	
+
 	public static void sendWakefulWork(Context ctxt, Intent i) {
 		acquireStaticLock(ctxt);
 		ctxt.startService(i);
 	}
-	
+
 	public static void sendWakefulWork(Context ctxt, Class<?> clsService) {
 		sendWakefulWork(ctxt, new Intent(ctxt, clsService));
 	}
-	
+
 	public WakefulIntentService(String name) {
 		super(name);
 	}
-	
+
 	@Override
-  public void onStart(Intent intent, int startId) {
-		if (!getLock(this).isHeld()) {	// fail-safe for crash restart
+	public void onStart(Intent intent, int startId) {
+		if (!getLock(this).isHeld()) { // fail-safe for crash restart
 			getLock(this).acquire();
 		}
 
 		super.onStart(intent, startId);
 	}
-	
+
 	@Override
 	final protected void onHandleIntent(Intent intent) {
 		try {
 			doWakefulWork(intent);
-		}
-		finally {
+		} finally {
 			getLock(this).release();
 		}
 	}
