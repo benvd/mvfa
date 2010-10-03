@@ -24,6 +24,8 @@ import java.util.Random;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -53,6 +55,7 @@ public class TopupsActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			model.requery();
+			TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
 		}
 	};
 
@@ -73,8 +76,10 @@ public class TopupsActivity extends Activity {
 		updateButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				setProgressBarIndeterminateVisibility(true);
-				new UpdateTopupsTask().execute();
+				TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(true);
+				Intent i = new Intent(TopupsActivity.this, MVDataService.class);
+				i.setAction(MVDataService.UPDATE_TOPUPS);
+				WakefulIntentService.sendWakefulWork(TopupsActivity.this, i);
 			}
 		});
 

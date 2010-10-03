@@ -181,7 +181,7 @@ public class MVDataService extends WakefulIntentService {
 	private void updateTopups() throws ClientProtocolException, IOException, JSONException {
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
-		String response = MVDataHelper.getTestResponse(username, password, URL_TOPUPS);
+		String response = MVDataHelper.getResponse(username, password, URL_TOPUPS);
 		helper.topups.update(new JSONArray(response), false);
 		sendBroadcast(topupsBroadcast);
 		Log.i(MainActivity.TAG, "Updated topups");
