@@ -56,14 +56,18 @@ public class CreditActivity extends Activity {
 	private DatabaseHelper helper;
 	private SharedPreferences prefs;
 
-	/**
-	 * Callback for the MVDataService.
-	 */
-	private BroadcastReceiver receiver = new BroadcastReceiver() {
+	private BroadcastReceiver successReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			updateView();
 			CreditActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
+		}
+	};
+
+	private BroadcastReceiver exceptionReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO handle exceptions
 		}
 	};
 
@@ -107,13 +111,14 @@ public class CreditActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		registerReceiver(receiver, new IntentFilter(MVDataService.CREDIT_UPDATED));
+		registerReceiver(successReceiver, new IntentFilter(MVDataService.CREDIT_UPDATED));
+		registerReceiver(exceptionReceiver, new IntentFilter(MVDataService.EXCEPTION));
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		unregisterReceiver(receiver);
+		unregisterReceiver(successReceiver);
 	}
 
 	@Override

@@ -45,8 +45,6 @@ public class MVDataService extends WakefulIntentService {
 	public final static String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
 	public static final String URL_PRICE_PLAN = "https://mobilevikings.com/api/2.0/basic/price_plan_details.json";
 
-	private static final long RETRY_TIMEOUT = 30000;
-
 	public static final String UPDATE_ALL = "be.benvd.mvforandroid.data.Update";
 	public static final String UPDATE_CREDIT = "be.benvd.mvforandroid.data.UpdateCredit";
 	public static final String UPDATE_USAGE = "be.benvd.mvforandroid.data.UpdateUsage";
@@ -55,10 +53,12 @@ public class MVDataService extends WakefulIntentService {
 	public static final String CREDIT_UPDATED = "be.benvd.mvforandroid.data.CreditUpdated";
 	public static final String USAGE_UPDATED = "be.benvd.mvforandroid.data.UsageUpdated";
 	public static final String TOPUPS_UPDATED = "be.benvd.mvforandroid.data.TopupsUpdated";
+	public static final String EXCEPTION = "be.benvd.mvforandroid.data.TopupsUpdated";
 
 	private Intent creditBroadcast = new Intent(CREDIT_UPDATED);
 	private Intent usageBroadcast = new Intent(USAGE_UPDATED);
 	private Intent topupsBroadcast = new Intent(TOPUPS_UPDATED);
+	private Intent exceptionBroadcast = new Intent(EXCEPTION);
 
 	private AlarmManager alarm = null;
 	private PendingIntent wakefulWorkIntent = null;
@@ -95,14 +95,6 @@ public class MVDataService extends WakefulIntentService {
 		Log.d(MainActivity.TAG, "Scheduled update in " + delay + "ms.");
 	}
 
-	/**
-	 * Schedules the next execution of doWakefulWork using RETRY_TIMEOUT.
-	 */
-	private void retry() {
-		alarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + RETRY_TIMEOUT,
-				wakefulWorkIntent);
-	}
-
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -130,22 +122,16 @@ public class MVDataService extends WakefulIntentService {
 				if (prefs.getBoolean("auto_topups", false))
 					updateTopups();
 			}
-		} catch (ClientProtocolException e) {
-			Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
-			retry();
-		} catch (IOException e) {
-			Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
-			retry();
-		} catch (JSONException e) {
-			Log.e(MainActivity.TAG, "Exception in doWakefulWork", e);
-			retry();
+		} catch (Exception e) {
+			exceptionBroadcast.putExtra(EXCEPTION, e);
+			sendBroadcast(exceptionBroadcast);
 		}
 	}
 
 	private void updatePricePlan() throws ClientProtocolException, IOException, JSONException {
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
-		String response = MVDataHelper.getTestResponse(username, password, URL_PRICE_PLAN);
+		String response = MVDataHelper.getResponse(username, password, URL_PRICE_PLAN);
 		JSONObject json = new JSONObject(response);
 		Editor edit = prefs.edit();
 		edit.putString(MVDataHelper.PRICE_PLAN_NAME, json.getString("name"));
@@ -172,7 +158,7 @@ public class MVDataService extends WakefulIntentService {
 	private void updateUsage() throws ClientProtocolException, IOException, JSONException {
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
-		String response = MVDataHelper.getTestResponse(username, password, URL_USAGE);
+		String response = MVDataHelper.getResponse(username, password, URL_USAGE);
 		helper.usage.update(new JSONArray(response), false);
 		sendBroadcast(usageBroadcast);
 		Log.i(MainActivity.TAG, "Updated usage");
