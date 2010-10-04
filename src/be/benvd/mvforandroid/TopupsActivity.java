@@ -85,6 +85,7 @@ public class TopupsActivity extends Activity {
 
 		ListView topupsList = (ListView) findViewById(R.id.topups_list);
 		topupsList.setAdapter(new TopupsAdapter(this, model));
+		topupsList.setFocusable(false);
 	}
 
 	@Override
@@ -143,6 +144,11 @@ public class TopupsActivity extends Activity {
 			TopupsHolder holder = new TopupsHolder(listItem);
 			listItem.setTag(holder);
 			return listItem;
+		}
+
+		@Override
+		public boolean isEnabled(int position) {
+			return false;
 		}
 
 	}
