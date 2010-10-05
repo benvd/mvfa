@@ -82,6 +82,9 @@ public class UsageActivity extends Activity {
 				UsageActivity.this.getParent().setProgressBarIndeterminateVisibility(true);
 				Intent i = new Intent(UsageActivity.this, MVDataService.class);
 				i.setAction(MVDataService.UPDATE_USAGE);
+				// TODO set these dates using UI control
+				i.putExtra(MVDataService.UPDATE_USAGE_STARTTIME, 0);
+				i.putExtra(MVDataService.UPDATE_USAGE_ENDTIME, 0);
 				WakefulIntentService.sendWakefulWork(UsageActivity.this, i);
 			}
 		});

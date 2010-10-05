@@ -18,6 +18,8 @@
 package be.benvd.mvforandroid.data;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
@@ -49,6 +51,8 @@ public class MVDataService extends WakefulIntentService {
 	public static final String UPDATE_CREDIT = "be.benvd.mvforandroid.data.UpdateCredit";
 	public static final String UPDATE_USAGE = "be.benvd.mvforandroid.data.UpdateUsage";
 	public static final String UPDATE_TOPUPS = "be.benvd.mvforandroid.data.UpdateTopups";
+	public static final String UPDATE_USAGE_STARTTIME = "be.benvd.mvforandroid.data.UsageStartTime";
+	public static final String UPDATE_USAGE_ENDTIME = "be.benvd.mvforandroid.data.UsageEndTime";
 
 	public static final String CREDIT_UPDATED = "be.benvd.mvforandroid.data.CreditUpdated";
 	public static final String USAGE_UPDATED = "be.benvd.mvforandroid.data.UsageUpdated";
@@ -113,7 +117,8 @@ public class MVDataService extends WakefulIntentService {
 			} else if (action.equals(UPDATE_TOPUPS)) {
 				updateTopups();
 			} else if (action.equals(UPDATE_USAGE)) {
-				updateUsage();
+				updateUsage(intent.getLongExtra(UPDATE_USAGE_STARTTIME, 0), intent
+						.getLongExtra(UPDATE_USAGE_ENDTIME, 0));
 			} else if (action.equals(UPDATE_ALL)) {
 				if (prefs.getBoolean("auto_credit", false))
 					updateCredit();
@@ -141,7 +146,6 @@ public class MVDataService extends WakefulIntentService {
 						"amount"));
 		edit.putFloat(MVDataHelper.PRICE_PLAN_TOPUP_AMOUNT, Float.parseFloat(json.getString("top_up_amount")));
 		edit.commit();
-		Log.v("DEBUG", "" + prefs.getInt(MVDataHelper.PRICE_PLAN_DATA_AMOUNT, -1337));
 		Log.i(MainActivity.TAG, "Updated price plan");
 	}
 
@@ -156,10 +160,22 @@ public class MVDataService extends WakefulIntentService {
 	}
 
 	private void updateUsage() throws ClientProtocolException, IOException, JSONException {
+		updateUsage(0, 0);
+	}
+
+	private void updateUsage(long starttime, long endtime) throws ClientProtocolException, IOException, JSONException {
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
-		String response = MVDataHelper.getResponse(username, password, URL_USAGE);
-		Log.v("DEBUG", response);
+
+		String url = URL_USAGE;
+		if (starttime != 0 && endtime != 0) {
+			SimpleDateFormat formatTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+			String start = formatTime.format(new Date(starttime));
+			String end = formatTime.format(new Date(endtime));
+			url += "?from_date=" + start + "&until_date=" + end;
+		}
+
+		String response = MVDataHelper.getResponse(username, password, url);
 		helper.usage.update(new JSONArray(response));
 		sendBroadcast(usageBroadcast);
 		Log.i(MainActivity.TAG, "Updated usage");

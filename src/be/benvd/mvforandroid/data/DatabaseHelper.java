@@ -94,8 +94,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			values.put("credits", Double.parseDouble(json.getString("credits")));
 			values.put("price_plan", json.getString("price_plan"));
 
-			Log.v("DEBUG", "" + json.getString("data"));
-
 			if (query.getCount() == 0) {
 				// No credit info stored yet, insert a row
 				getWritableDatabase().insert(TABLE_NAME, "valid_until", values);
