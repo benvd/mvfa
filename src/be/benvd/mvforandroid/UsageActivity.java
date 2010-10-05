@@ -60,7 +60,7 @@ public class UsageActivity extends Activity {
 	private BroadcastReceiver receiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			updateView();
+			model.requery();
 			UsageActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
 		}
 	};
@@ -87,7 +87,8 @@ public class UsageActivity extends Activity {
 		});
 
 		ListView usageList = (ListView) findViewById(R.id.usage_list);
-		usageList.setAdapter(new UsageAdapter(helper.usage.get(Usage.ORDER_BY_DATE, false)));
+		model = helper.usage.get(Usage.ORDER_BY_DATE, false);
+		usageList.setAdapter(new UsageAdapter(model));
 
 		OnItemClickListener onItemClickListener = new OnItemClickListener() {
 			@Override
@@ -219,6 +220,8 @@ public class UsageActivity extends Activity {
 	private static DecimalFormat currencyFormat = new DecimalFormat("#.##");
 	private static SimpleDateFormat formatTime = new SimpleDateFormat("HH:mm");
 	private static DecimalFormat dataFormat = new DecimalFormat("#.##");
+
+	private Cursor model;
 
 	private static String formatCurrency(double amount) {
 		return currencyFormat.format(amount) + "€";
