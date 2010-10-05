@@ -40,7 +40,7 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class MVDataService extends WakefulIntentService {
 
-	public final static String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json";
+	public final static String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json?page_size=100";
 	public final static String URL_CREDIT = "https://mobilevikings.com/api/2.0/basic/sim_balance.json?add_price_plan=1";
 	public final static String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
 	public static final String URL_PRICE_PLAN = "https://mobilevikings.com/api/2.0/basic/price_plan_details.json";
@@ -159,7 +159,8 @@ public class MVDataService extends WakefulIntentService {
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
 		String response = MVDataHelper.getResponse(username, password, URL_USAGE);
-		helper.usage.update(new JSONArray(response), false);
+		Log.v("DEBUG", response);
+		helper.usage.update(new JSONArray(response));
 		sendBroadcast(usageBroadcast);
 		Log.i(MainActivity.TAG, "Updated usage");
 	}

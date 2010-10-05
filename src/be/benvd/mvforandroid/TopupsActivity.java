@@ -153,8 +153,6 @@ public class TopupsActivity extends Activity {
 
 	}
 
-	// TODO handle rotation
-
 	public class UpdateTopupsTask extends AsyncTask<Void, Void, Void> {
 
 		@Override

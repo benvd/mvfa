@@ -61,7 +61,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		// TODO if all auto-preferences are disabled, stop session (broadcast an intent -- BroadcastReceiver as inner
+		// TODO if all auto-preferences are disabled, stop service (broadcast an intent -- BroadcastReceiver as inner
 		// class of service, so we can stopSelf)
 		if (key.equals("auto_credit")) {
 			updateCreditPreference(sharedPreferences);

@@ -52,9 +52,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL("CREATE TABLE IF NOT EXISTS " + Usage.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-				+ "timestamp INTEGER NOT NULL, " + "duration INTEGER NOT NULL, " + "type INTEGER NOT NULL, "
-				+ "incoming INTEGER NOT NULL, " + "contact TEXT NOT NULL, " + "cost REAL NOT NULL,"
-				+ "is_search INTEGER NOT NULL);");
+				+ "timestamp INTEGER NOT NULL, " + "duration INTEGER, " + "type INTEGER, " + "incoming INTEGER, "
+				+ "contact TEXT, " + "cost REAL);");
 		db.execSQL("CREATE TABLE IF NOT EXISTS " + Topups.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ "amount REAL NOT NULL, " + "method TEXT NOT NULL, " + "executed_on INTEGER NOT NULL, "
 				+ "received_on INTEGER NOT NULL, " + "status TEXT NOT NULL);");
@@ -74,8 +73,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		try {
 			return apiFormat.parse(dateString);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			Log.e("MVFA", "Exception in getDateFromAPI", e);
 			return null;
 		}
 	}
@@ -198,29 +195,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		public static final int TYPE_VOICE = 2;
 		public static final int TYPE_MMS = 3;
 
-		public static final int ORDER_DATE = 1;
+		public static final int ORDER_BY_DATE = 1;
 
-		/**
-		 * Adds all entries of the JSON array to the usage table. If isSearch is true, all current database entries with
-		 * isSearch set to true will be removed beforehand, and vice versa.
-		 * 
-		 * @param jsonArray
-		 * @param isSearch
-		 *            Flag to determine whether the usage entries were obtained by searching (i.e. the user specified a
-		 *            given time period) or by auto updating (i.e. entries of the present day).
-		 * @throws JSONException
-		 */
-		public void update(JSONArray jsonArray, boolean isSearch) throws JSONException {
-			// Delete all rows of the given type (isSearch)
-			getWritableDatabase().delete(TABLE_NAME, "is_search=" + (isSearch ? 1 : 0), null);
+		public void update(JSONArray jsonArray) throws JSONException {
+			getWritableDatabase().delete(TABLE_NAME, null, null);
 
 			for (int i = 0; i < jsonArray.length(); i++) {
 				JSONObject json = jsonArray.getJSONObject(i);
-				insert(json, isSearch);
+				insert(json);
 			}
 		}
 
-		public void insert(JSONObject json, boolean isSearch) throws JSONException {
+		public void insert(JSONObject json) throws JSONException {
+
+			// "timestamp INTEGER NOT NULL, " +
+			// "duration INTEGER NOT NULL, " +
+			// "type INTEGER NOT NULL, " +
+			// "incoming INTEGER NOT NULL, " +
+			// "contact TEXT NOT NULL, " +
+			// "cost REAL NOT NULL);");
+
 			ContentValues values = new ContentValues();
 			values.put("timestamp", getDateFromAPI(json.getString("start_timestamp")).getTime());
 			values.put("duration", json.getLong("duration_connection"));
@@ -237,7 +231,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			values.put("incoming", (Boolean.parseBoolean(json.getString("is_incoming")) ? 1 : 0));
 			values.put("contact", json.getString("to"));
 			values.put("cost", Double.parseDouble(json.getString("price")));
-			values.put("is_search", isSearch);
 
 			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);
 		}
@@ -257,28 +250,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		 * @param ascending
 		 *            Whether the order should be ascending or descending.
 		 */
-		public Cursor get(boolean isSearch, int order, boolean ascending) {
+		public Cursor get(int order, boolean ascending) {
 			String orderBy = null;
 			switch (order) {
-				case ORDER_DATE:
+				case ORDER_BY_DATE:
 					orderBy = "timestamp " + (ascending ? "asc" : "desc");
 			}
-			return getReadableDatabase().query(TABLE_NAME, null, "is_search=" + (isSearch ? 1 : 0), null, null, null,
-					orderBy);
-		}
-
-		public Cursor getDates(boolean isSearch, boolean ascending) {
-			return getReadableDatabase().query(true, TABLE_NAME, new String[] { "timestamp" },
-					"is_search=" + (isSearch ? 1 : 0), null, null, null, "timestamp " + (ascending ? "asc" : "desc"),
-					null);
-		}
-
-		public Cursor getBetween(boolean isSearch, long timestamp, long timestampEnd, boolean ascending) {
-			return getReadableDatabase().query(
-					TABLE_NAME,
-					null,
-					"is_search=" + (isSearch ? 1 : 0) + " AND timestamp >= " + timestamp + " AND timestamp <= "
-							+ timestampEnd, null, null, null, "timestamp " + (ascending ? "asc" : "desc"));
+			return getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, orderBy);
 		}
 
 		public long getTimestamp(Cursor c) {
