@@ -32,9 +32,6 @@ import be.benvd.mvforandroid.data.OnAlarmReceiver;
 
 public class MainActivity extends TabActivity {
 
-	// TODO handle rotation during AsyncTasks. Check
-	// http://commonsware.com/blog/2010/09/10/asynctask-screen-rotation.html
-
 	public static final String TAG = "MVFA";
 
 	@Override

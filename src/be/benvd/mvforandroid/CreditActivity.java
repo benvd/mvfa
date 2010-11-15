@@ -166,6 +166,7 @@ public class CreditActivity extends Activity {
 		private static final int REMAINING_SMS = 1;
 		private static final int REMAINING_DATA = 2;
 		private static final int VALID_UNTIL = 3;
+		private static final double RATIO_THRESHOLD = 0.10;
 
 		public CreditAdapter() {
 			super(NUM_ROWS);
@@ -183,8 +184,8 @@ public class CreditActivity extends Activity {
 					float ratio = ((float) remainingCredit / prefs.getFloat(MVDataHelper.PRICE_PLAN_TOPUP_AMOUNT, 15));
 					view.setBackgroundDrawable(getProgressBackground(ratio));
 
-					if (ratio < 0.10)
-						text.setTextColor(0xff561515);
+					if (ratio < RATIO_THRESHOLD)
+						text.setTextColor(0xffa51d1d);
 
 					return view;
 				}
@@ -197,8 +198,8 @@ public class CreditActivity extends Activity {
 					float ratio = ((float) remainingSms / prefs.getInt(MVDataHelper.PRICE_PLAN_SMS_AMOUNT, 1000));
 					view.setBackgroundDrawable(getProgressBackground(ratio));
 
-					if (ratio < 0.10)
-						text.setTextColor(0xff561515);
+					if (ratio < RATIO_THRESHOLD)
+						text.setTextColor(0xffa51d1d);
 
 					return view;
 				}
@@ -212,8 +213,8 @@ public class CreditActivity extends Activity {
 							1024) * 1024 * 1024));
 					view.setBackgroundDrawable(getProgressBackground(ratio));
 
-					if (ratio < 0.10)
-						text.setTextColor(0xff561515);
+					if (ratio < RATIO_THRESHOLD)
+						text.setTextColor(0xffa51d1d);
 
 					return view;
 				}
@@ -222,6 +223,12 @@ public class CreditActivity extends Activity {
 					TextView validText = (TextView) view.findViewById(R.id.valid_until);
 					validText.setText(getString(R.string.valid_until) + " "
 							+ formatValidUntilDate(helper.credit.getValidUntil()));
+
+					long remainingTime = helper.credit.getValidUntil() - System.currentTimeMillis();
+					long oneMonthInMillis = 30 * 24 * 3600000;
+					double ratio = remainingTime / oneMonthInMillis;
+					if (ratio < RATIO_THRESHOLD)
+						validText.setTextColor(0xffa51d1d);
 
 					TextView planText = (TextView) view.findViewById(R.id.price_plan);
 					String planName = prefs.getString(MVDataHelper.PRICE_PLAN_NAME, null);
