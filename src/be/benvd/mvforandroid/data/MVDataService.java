@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +41,7 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class MVDataService extends WakefulIntentService {
 
-	public final static String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json?page_size=100";
+	public final static String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json";
 	public final static String URL_CREDIT = "https://mobilevikings.com/api/2.0/basic/sim_balance.json?add_price_plan=1";
 	public final static String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
 	public static final String URL_PRICE_PLAN = "https://mobilevikings.com/api/2.0/basic/price_plan_details.json";
@@ -127,13 +126,16 @@ public class MVDataService extends WakefulIntentService {
 				if (prefs.getBoolean("auto_topups", false))
 					updateTopups();
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
+			exceptionBroadcast.putExtra(EXCEPTION, e);
+			sendBroadcast(exceptionBroadcast);
+		} catch (JSONException e) {
 			exceptionBroadcast.putExtra(EXCEPTION, e);
 			sendBroadcast(exceptionBroadcast);
 		}
 	}
 
-	private void updatePricePlan() throws ClientProtocolException, IOException, JSONException {
+	private void updatePricePlan() throws JSONException, IOException {
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
 		String response = MVDataHelper.getResponse(username, password, URL_PRICE_PLAN);
@@ -149,7 +151,7 @@ public class MVDataService extends WakefulIntentService {
 		Log.i(MainActivity.TAG, "Updated price plan");
 	}
 
-	private void updateCredit() throws ClientProtocolException, IOException, JSONException {
+	private void updateCredit() throws JSONException, IOException {
 		updatePricePlan();
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
@@ -159,11 +161,11 @@ public class MVDataService extends WakefulIntentService {
 		Log.i(MainActivity.TAG, "Updated credit");
 	}
 
-	private void updateUsage() throws ClientProtocolException, IOException, JSONException {
+	private void updateUsage() throws IOException, JSONException {
 		updateUsage(0, 0);
 	}
 
-	private void updateUsage(long starttime, long endtime) throws ClientProtocolException, IOException, JSONException {
+	private void updateUsage(long starttime, long endtime) throws IOException, JSONException {
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
 
@@ -175,13 +177,15 @@ public class MVDataService extends WakefulIntentService {
 			url += "?from_date=" + start + "&until_date=" + end;
 		}
 
+		Log.v("DEBUG", url);
+
 		String response = MVDataHelper.getResponse(username, password, url);
 		helper.usage.update(new JSONArray(response));
 		sendBroadcast(usageBroadcast);
 		Log.i(MainActivity.TAG, "Updated usage");
 	}
 
-	private void updateTopups() throws ClientProtocolException, IOException, JSONException {
+	private void updateTopups() throws IOException, JSONException {
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
 		String response = MVDataHelper.getResponse(username, password, URL_TOPUPS);

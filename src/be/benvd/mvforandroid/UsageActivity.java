@@ -19,9 +19,13 @@ package be.benvd.mvforandroid;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,18 +35,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Contacts;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CursorAdapter;
+import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import be.benvd.mvforandroid.data.DatabaseHelper;
 import be.benvd.mvforandroid.data.MVDataService;
@@ -55,13 +58,18 @@ public class UsageActivity extends Activity {
 
 	public DatabaseHelper helper;
 
-	private boolean ascending = true;
-
-	private BroadcastReceiver receiver = new BroadcastReceiver() {
+	private BroadcastReceiver updatedReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			model.requery();
 			UsageActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
+		}
+	};
+
+	private BroadcastReceiver exceptionReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Toast.makeText(context, "Could not update. Please try again later.", Toast.LENGTH_SHORT).show();
 		}
 	};
 
@@ -77,15 +85,35 @@ public class UsageActivity extends Activity {
 	public void updateView() {
 		Button updateButton = (Button) findViewById(R.id.update_button);
 		updateButton.setOnClickListener(new OnClickListener() {
+			private OnDateSetListener datePicked = new OnDateSetListener() {
+				@Override
+				public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+					Calendar lower = GregorianCalendar.getInstance();
+					lower.set(Calendar.YEAR, year);
+					lower.set(Calendar.MONTH, monthOfYear);
+					lower.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+					lower.set(Calendar.HOUR_OF_DAY, 0);
+					lower.set(Calendar.MINUTE, 0);
+					lower.set(Calendar.SECOND, 0);
+
+					Calendar upper = (Calendar) lower.clone();
+					upper.add(Calendar.DAY_OF_MONTH, 1);
+
+					UsageActivity.this.getParent().setProgressBarIndeterminateVisibility(true);
+					Intent i = new Intent(UsageActivity.this, MVDataService.class);
+					i.setAction(MVDataService.UPDATE_USAGE);
+					i.putExtra(MVDataService.UPDATE_USAGE_STARTTIME, lower.getTimeInMillis());
+					i.putExtra(MVDataService.UPDATE_USAGE_ENDTIME, upper.getTimeInMillis());
+					WakefulIntentService.sendWakefulWork(UsageActivity.this, i);
+				}
+			};
+
 			@Override
 			public void onClick(View v) {
-				UsageActivity.this.getParent().setProgressBarIndeterminateVisibility(true);
-				Intent i = new Intent(UsageActivity.this, MVDataService.class);
-				i.setAction(MVDataService.UPDATE_USAGE);
-				// TODO set these dates using UI control
-				i.putExtra(MVDataService.UPDATE_USAGE_STARTTIME, 0);
-				i.putExtra(MVDataService.UPDATE_USAGE_ENDTIME, 0);
-				WakefulIntentService.sendWakefulWork(UsageActivity.this, i);
+				Calendar c = GregorianCalendar.getInstance();
+				DatePickerDialog datePicker = new DatePickerDialog(UsageActivity.this, datePicked,
+						c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+				datePicker.show();
 			}
 		});
 
@@ -167,13 +195,15 @@ public class UsageActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		registerReceiver(receiver, new IntentFilter(MVDataService.USAGE_UPDATED));
+		registerReceiver(updatedReceiver, new IntentFilter(MVDataService.USAGE_UPDATED));
+		registerReceiver(exceptionReceiver, new IntentFilter(MVDataService.EXCEPTION));
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		unregisterReceiver(receiver);
+		unregisterReceiver(updatedReceiver);
+		unregisterReceiver(exceptionReceiver);
 	}
 
 	@Override
@@ -182,46 +212,8 @@ public class UsageActivity extends Activity {
 		helper.close();
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		new MenuInflater(this).inflate(R.menu.usage_menu, menu);
-		return super.onCreateOptionsMenu(menu);
-	}
-
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		MenuItem ascDesc = menu.findItem(R.id.change_asc_desc);
-		if (ascending) {
-			ascDesc.setIcon(R.drawable.menu_sort_descending);
-			ascDesc.setTitle(R.string.descending);
-		} else {
-			ascDesc.setIcon(R.drawable.menu_sort_ascending);
-			ascDesc.setTitle(R.string.ascending);
-		}
-		return super.onPrepareOptionsMenu(menu);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.change_asc_desc: {
-				ascending = !ascending;
-				// TODO store ascending in prefs
-				updateView();
-				return true;
-			}
-			case R.id.settings: {
-				Intent intent = new Intent(this, SettingsActivity.class);
-				startActivity(intent);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	private static DecimalFormat currencyFormat = new DecimalFormat("#.##");
-	private static SimpleDateFormat formatTime = new SimpleDateFormat("HH:mm");
+	private static SimpleDateFormat formatTime = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	private static DecimalFormat dataFormat = new DecimalFormat("#.##");
 
 	private Cursor model;

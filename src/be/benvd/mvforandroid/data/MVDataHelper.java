@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
@@ -39,12 +38,9 @@ public class MVDataHelper {
 	 * Returns the GET response of the given url.
 	 * 
 	 * @throws IOException
-	 * @throws ClientProtocolException
-	 * 
 	 * @return The response of the given URL. If no response was found, null is returned.
 	 */
-	public static String getResponse(String username, String password, String url) throws ClientProtocolException,
-			IOException {
+	public static String getResponse(String username, String password, String url) throws IOException {
 		DefaultHttpClient httpclient = new DefaultHttpClient();
 		httpclient.getCredentialsProvider().setCredentials(new AuthScope(null, -1),
 				new UsernamePasswordCredentials(username + ":" + password));

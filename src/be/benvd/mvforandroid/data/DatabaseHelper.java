@@ -197,10 +197,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		public void update(JSONArray jsonArray) throws JSONException {
 			getWritableDatabase().delete(TABLE_NAME, null, null);
 
+			getWritableDatabase().beginTransaction();
 			for (int i = 0; i < jsonArray.length(); i++) {
 				JSONObject json = jsonArray.getJSONObject(i);
 				insert(json);
 			}
+			getWritableDatabase().setTransactionSuccessful();
+			getWritableDatabase().endTransaction();
 		}
 
 		public void insert(JSONObject json) throws JSONException {

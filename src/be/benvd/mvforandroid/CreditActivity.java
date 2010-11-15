@@ -32,18 +32,15 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import be.benvd.mvforandroid.data.DatabaseHelper;
 import be.benvd.mvforandroid.data.MVDataHelper;
 import be.benvd.mvforandroid.data.MVDataService;
@@ -67,7 +64,7 @@ public class CreditActivity extends Activity {
 	private BroadcastReceiver exceptionReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			// TODO handle exceptions
+			Toast.makeText(context, "Could not update. Please try again later.", Toast.LENGTH_SHORT).show();
 		}
 	};
 
@@ -92,15 +89,6 @@ public class CreditActivity extends Activity {
 			}
 		});
 
-		Button topupButton = (Button) findViewById(R.id.topup_button);
-		topupButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Uri uri = Uri.parse("https://mobilevikings.com/en/myviking/topup/add/");
-				Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
-				startActivity(browserIntent);
-			}
-		});
 	}
 
 	private void updateView() {
@@ -119,30 +107,13 @@ public class CreditActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		unregisterReceiver(successReceiver);
+		unregisterReceiver(exceptionReceiver);
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		helper.close();
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		new MenuInflater(this).inflate(R.menu.credit_menu, menu);
-		return super.onCreateOptionsMenu(menu);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.settings:
-				Intent intent = new Intent(this, SettingsActivity.class);
-				startActivity(intent);
-				return true;
-		}
-
-		return false;
 	}
 
 	private DecimalFormat currencyFormat = new DecimalFormat("#.##");

@@ -35,6 +35,7 @@ import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import be.benvd.mvforandroid.data.DatabaseHelper;
 import be.benvd.mvforandroid.data.MVDataService;
 
@@ -45,11 +46,18 @@ public class TopupsActivity extends Activity {
 	public DatabaseHelper helper;
 	private Cursor model;
 
-	private BroadcastReceiver receiver = new BroadcastReceiver() {
+	private BroadcastReceiver updatedReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			model.requery();
 			TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
+		}
+	};
+
+	private BroadcastReceiver exceptionReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Toast.makeText(context, "Could not update. Please try again later.", Toast.LENGTH_SHORT).show();
 		}
 	};
 
@@ -85,13 +93,15 @@ public class TopupsActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		registerReceiver(receiver, new IntentFilter(MVDataService.TOPUPS_UPDATED));
+		registerReceiver(updatedReceiver, new IntentFilter(MVDataService.TOPUPS_UPDATED));
+		registerReceiver(exceptionReceiver, new IntentFilter(MVDataService.EXCEPTION));
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		unregisterReceiver(receiver);
+		unregisterReceiver(updatedReceiver);
+		unregisterReceiver(exceptionReceiver);
 	}
 
 	@Override
