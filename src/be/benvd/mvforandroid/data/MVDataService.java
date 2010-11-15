@@ -57,6 +57,8 @@ public class MVDataService extends WakefulIntentService {
 	public static final String USAGE_UPDATED = "be.benvd.mvforandroid.data.UsageUpdated";
 	public static final String TOPUPS_UPDATED = "be.benvd.mvforandroid.data.TopupsUpdated";
 	public static final String EXCEPTION = "be.benvd.mvforandroid.data.TopupsUpdated";
+	public static final String STOP_SERVICE = "be.benvd.mvforandroid.data.StopService";
+	public static final String SCHEDULE_SERVICE = "be.benvd.mvforandroid.data.ScheduleService";
 
 	private Intent creditBroadcast = new Intent(CREDIT_UPDATED);
 	private Intent usageBroadcast = new Intent(USAGE_UPDATED);
@@ -79,6 +81,7 @@ public class MVDataService extends WakefulIntentService {
 
 	@Override
 	public void onCreate() {
+		Log.v("DEBUG", "onCreate()");
 		super.onCreate();
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		helper = new DatabaseHelper(this);
@@ -86,7 +89,6 @@ public class MVDataService extends WakefulIntentService {
 
 		Intent i = new Intent(this, OnAlarmReceiver.class);
 		wakefulWorkIntent = PendingIntent.getBroadcast(this, 0, i, 0);
-		scheduleNextUpdate();
 	}
 
 	/**
@@ -100,6 +102,7 @@ public class MVDataService extends WakefulIntentService {
 
 	@Override
 	public void onDestroy() {
+		Log.v("DEBUG", "onDestroy()");
 		super.onDestroy();
 		helper.close();
 	}
@@ -109,6 +112,7 @@ public class MVDataService extends WakefulIntentService {
 	 */
 	@Override
 	protected void doWakefulWork(Intent intent) {
+		Log.v("DEBUG", "intent: " + intent);
 		String action = intent.getAction();
 		try {
 			if (action.equals(UPDATE_CREDIT)) {
@@ -119,12 +123,18 @@ public class MVDataService extends WakefulIntentService {
 				updateUsage(intent.getLongExtra(UPDATE_USAGE_STARTTIME, 0), intent
 						.getLongExtra(UPDATE_USAGE_ENDTIME, 0));
 			} else if (action.equals(UPDATE_ALL)) {
-				if (prefs.getBoolean("auto_credit", false))
+				if (prefs.getBoolean("auto_credit", true))
 					updateCredit();
 				if (prefs.getBoolean("auto_usage", false))
 					updateUsage();
 				if (prefs.getBoolean("auto_topups", false))
 					updateTopups();
+				scheduleNextUpdate();
+			} else if (action.equals(STOP_SERVICE)) {
+				alarm.cancel(wakefulWorkIntent);
+				stopSelf();
+			} else if (action.equals(SCHEDULE_SERVICE)) {
+				scheduleNextUpdate();
 			}
 		} catch (IOException e) {
 			exceptionBroadcast.putExtra(EXCEPTION, e);

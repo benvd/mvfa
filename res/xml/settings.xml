@@ -28,7 +28,7 @@
 		android:key="auto_credit"
 		android:title="@string/credit"
 		android:summary="@string/settings_auto_credit_disabled"
-		android:defaultValue="false" />
+		android:defaultValue="true" />
 
 	<CheckBoxPreference
 		android:key="auto_usage"

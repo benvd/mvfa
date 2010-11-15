@@ -17,25 +17,29 @@
 
 package be.benvd.mvforandroid;
 
+import be.benvd.mvforandroid.data.MVDataService;
+
+import com.commonsware.cwac.wakeful.WakefulIntentService;
+
 import my.android.app.TabActivity;
 import my.android.widget.TabHost;
 import my.android.widget.TabHost.OnTabChangeListener;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
-import be.benvd.mvforandroid.data.OnAlarmReceiver;
 
 public class MainActivity extends TabActivity {
 
 	public static final String TAG = "MVFA";
+	private static final String FIRST_TIME = "be.benvd.mvforandroid.FirstTime";
+	private SharedPreferences prefs;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -43,27 +47,26 @@ public class MainActivity extends TabActivity {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.main);
 
-		setupTabHost();
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		if (prefs.getBoolean(FIRST_TIME, true))
+			firstTimeInit();
 
-		Intent i = new Intent(this, OnAlarmReceiver.class);
-		PendingIntent wakefulWorkIntent = PendingIntent.getBroadcast(this, 0, i, 0);
-		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-		am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 5000, wakefulWorkIntent);
+		setupTabHost();
+	}
+
+	private void firstTimeInit() {
+		// FIXME: This takes care of starting the service after app installation. We still need to add an OnBootReceiver
+		// to start the service after a reboot.
+		Intent i = new Intent(this, MVDataService.class);
+		i.setAction(MVDataService.SCHEDULE_SERVICE);
+		WakefulIntentService.sendWakefulWork(this, i);
+
+		prefs.edit().putBoolean(FIRST_TIME, false).commit();
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
 	}
 
 	@Override

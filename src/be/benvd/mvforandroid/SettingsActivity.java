@@ -17,6 +17,11 @@
 
 package be.benvd.mvforandroid;
 
+import be.benvd.mvforandroid.data.MVDataService;
+
+import com.commonsware.cwac.wakeful.WakefulIntentService;
+
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -60,15 +65,20 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 	}
 
 	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		// TODO if all auto-preferences are disabled, stop service (broadcast an intent -- BroadcastReceiver as inner
-		// class of service, so we can stopSelf)
+	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+		if (!(prefs.getBoolean("auto_credit", false) || prefs.getBoolean("auto_usage", false) || prefs.getBoolean(
+				"auto_topups", false))) {
+			Intent intent = new Intent(this, MVDataService.class);
+			intent.setAction(MVDataService.STOP_SERVICE);
+			WakefulIntentService.sendWakefulWork(this, intent);
+		}
+
 		if (key.equals("auto_credit")) {
-			updateCreditPreference(sharedPreferences);
+			updateCreditPreference(prefs);
 		} else if (key.equals("auto_usage")) {
-			updateUsagePreference(sharedPreferences);
+			updateUsagePreference(prefs);
 		} else if (key.equals("auto_topups")) {
-			updateTopupsPreference(sharedPreferences);
+			updateTopupsPreference(prefs);
 		} else if (key.equals("update_frequency")) {
 			updateFrequencyPreference();
 		}
