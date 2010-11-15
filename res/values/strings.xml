@@ -2,29 +2,18 @@
 <resources>
 	<string
 		name="app_name">Mobile Vikings for Android</string>
-
-	<!-- TABS -->
-
 	<string
 		name="credit">Credit</string>
 	<string
 		name="usage">Usage</string>
 	<string
 		name="topups">Top-ups</string>
-
-
-	<!-- MENUS -->
-
 	<string
 		name="settings">Settings</string>
 	<string
-		name="ascending">Ascending</string>
+		name="username">Username</string>
 	<string
-		name="descending">Descending</string>
-
-
-	<!-- SETTINGS -->
-
+		name="password">Password</string>
 	<string
 		name="auto_update">Auto Update</string>
 	<string
@@ -43,10 +32,6 @@
 		name="settings_auto_topups_enabled">Top-up info will be updated.</string>
 	<string
 		name="settings_auto_topups_disabled">Top-up info will not be updated.</string>
-
-
-	<!-- CREDITS -->
-
 	<string
 		name="update">Update</string>
 	<string
@@ -61,13 +46,16 @@
 		name="valid_until">Valid until</string>
 	<string
 		name="price_plan">Plan</string>
-
-
 	<string
 		name="megabytes">MB</string>
 	<string
 		name="kilobytes">KB</string>
 	<string
 		name="at_hour">at</string>
+	<string
+		name="login_title">Login to Mobile Vikings</string>
+	<string
+		name="exception_message">Could not connect. Make sure you entered the correct credentials and that your internet connection is working.
+	</string>
 
 </resources>

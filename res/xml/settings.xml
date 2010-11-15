@@ -7,11 +7,11 @@
 
 	<EditTextPreference
 		android:key="username"
-		android:title="Username" />
+		android:title="@string/username" />
 
 	<EditTextPreference
 		android:key="password"
-		android:title="Password"
+		android:title="@string/password"
 		android:password="true" />
 
 	<PreferenceCategory

@@ -17,23 +17,27 @@
 
 package be.benvd.mvforandroid;
 
-import be.benvd.mvforandroid.data.MVDataService;
-
-import com.commonsware.cwac.wakeful.WakefulIntentService;
-
 import my.android.app.TabActivity;
 import my.android.widget.TabHost;
 import my.android.widget.TabHost.OnTabChangeListener;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.EditText;
 import android.widget.TextView;
+import be.benvd.mvforandroid.data.MVDataService;
+
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class MainActivity extends TabActivity {
 
@@ -55,13 +59,35 @@ public class MainActivity extends TabActivity {
 	}
 
 	private void firstTimeInit() {
-		// FIXME: This takes care of starting the service after app installation. We still need to add an OnBootReceiver
-		// to start the service after a reboot.
-		Intent i = new Intent(this, MVDataService.class);
-		i.setAction(MVDataService.SCHEDULE_SERVICE);
-		WakefulIntentService.sendWakefulWork(this, i);
+		Builder b = new Builder(this);
+		b.setTitle(getString(R.string.login_title));
+		View view = ((LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.login_window, null);
 
-		prefs.edit().putBoolean(FIRST_TIME, false).commit();
+		final EditText username = (EditText) view.findViewById(R.id.username);
+		final EditText password = (EditText) view.findViewById(R.id.password);
+
+		b.setView(view);
+		b.setPositiveButton(getString(android.R.string.ok), new OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				saveCredentials(username.getText().toString(), password.getText().toString());
+
+				// FIXME: This takes care of starting the service after app installation. We still need to add an
+				// OnBootReceiver to start the service after a reboot.
+				// FIXME: After correctly entering credentials, force a refresh of (at least) the credit data.
+				Intent i = new Intent(MainActivity.this, MVDataService.class);
+				i.setAction(MVDataService.SCHEDULE_SERVICE);
+				WakefulIntentService.sendWakefulWork(MainActivity.this, i);
+
+				prefs.edit().putBoolean(FIRST_TIME, false).commit();
+			}
+
+			private void saveCredentials(String username, String password) {
+				prefs.edit().putString("username", username).putString("password", password).commit();
+			}
+		});
+		b.setCancelable(false);
+		b.create().show();
 	}
 
 	@Override

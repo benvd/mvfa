@@ -57,7 +57,8 @@ public class TopupsActivity extends Activity {
 	private BroadcastReceiver exceptionReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			Toast.makeText(context, "Could not update. Please try again later.", Toast.LENGTH_SHORT).show();
+			Toast.makeText(context, getString(R.string.exception_message), Toast.LENGTH_SHORT).show();
+			TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
 		}
 	};
 
