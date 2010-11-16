@@ -34,6 +34,7 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
@@ -50,6 +51,7 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class CreditActivity extends Activity {
 
+	public static final String ACTION_REFRESH = "be.benvd.mvforandroid";
 	private DatabaseHelper helper;
 	private SharedPreferences prefs;
 
@@ -66,6 +68,14 @@ public class CreditActivity extends Activity {
 		public void onReceive(Context context, Intent intent) {
 			Toast.makeText(context, getString(R.string.exception_message), Toast.LENGTH_SHORT).show();
 			CreditActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
+		}
+	};
+
+	private BroadcastReceiver refreshReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Log.v("DEBUG", "executing broadcastReceiver");
+			((Button) findViewById(R.id.update_button)).performClick();
 		}
 	};
 
@@ -102,6 +112,8 @@ public class CreditActivity extends Activity {
 		super.onResume();
 		registerReceiver(successReceiver, new IntentFilter(MVDataService.CREDIT_UPDATED));
 		registerReceiver(exceptionReceiver, new IntentFilter(MVDataService.EXCEPTION));
+		Log.v("DEBUG", "registering broadcastReceiver");
+		registerReceiver(refreshReceiver, new IntentFilter(ACTION_REFRESH));
 	}
 
 	@Override
@@ -109,6 +121,7 @@ public class CreditActivity extends Activity {
 		super.onPause();
 		unregisterReceiver(successReceiver);
 		unregisterReceiver(exceptionReceiver);
+		unregisterReceiver(refreshReceiver);
 	}
 
 	@Override

@@ -27,6 +27,7 @@ import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -74,12 +75,17 @@ public class MainActivity extends TabActivity {
 
 				// FIXME: This takes care of starting the service after app installation. We still need to add an
 				// OnBootReceiver to start the service after a reboot.
-				// FIXME: After correctly entering credentials, force a refresh of (at least) the credit data.
 				Intent i = new Intent(MainActivity.this, MVDataService.class);
 				i.setAction(MVDataService.SCHEDULE_SERVICE);
 				WakefulIntentService.sendWakefulWork(MainActivity.this, i);
 
 				prefs.edit().putBoolean(FIRST_TIME, false).commit();
+
+				// Should have credentials now, let's force a refresh of the credits overview. We can't just broadcast
+				// to the MVDataService, since we want visual confirmation in CreditsActivity that the update is in
+				// progress, so we need to go through it.
+				Log.v("DEBUG", "sending broadcast");
+				sendBroadcast(new Intent(CreditActivity.ACTION_REFRESH));
 			}
 
 			private void saveCredentials(String username, String password) {
