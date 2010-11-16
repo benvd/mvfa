@@ -57,5 +57,7 @@
 	<string
 		name="exception_message">Could not connect. Make sure you entered the correct credentials and that your internet connection is working.
 	</string>
+	<string
+		name="widget">Mobile Vikings</string>
 
 </resources>

@@ -47,6 +47,20 @@
 			android:name=".data.OnAlarmReceiver">
 		</receiver>
 
+		<receiver
+			android:name=".widgets.WidgetProvider"
+			android:label="@string/widget">
+			<intent-filter>
+				<action
+					android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+				<action
+					android:name="be.benvd.mvforandroid.UpdateDataFromWidget" />
+			</intent-filter>
+			<meta-data
+				android:name="android.appwidget.provider"
+				android:resource="@xml/widget_info" />
+		</receiver>
+
 	</application>
 
 	<uses-sdk
