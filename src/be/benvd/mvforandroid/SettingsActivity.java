@@ -31,10 +31,15 @@ import android.preference.PreferenceActivity;
 
 public class SettingsActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 
+	public static final String OPEN_APP = "0";
+	public static final String UPDATE_DATA = "1";
+	public static final String WIDGET_ACTION = "widget_action";
+
 	private Preference autoCreditPreference;
 	private Preference autoUsagePreference;
 	private Preference autoTopupsPreference;
 	private Preference updateFrequencyPreference;
+	private Preference widgetActionPreference;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +55,9 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 
 		updateFrequencyPreference = getPreferenceScreen().findPreference("update_frequency");
 		updateFrequencyPreference();
+
+		widgetActionPreference = getPreferenceScreen().findPreference(WIDGET_ACTION);
+		updateWidgetActionPreference();
 	}
 
 	@Override
@@ -81,6 +89,8 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 			updateTopupsPreference(prefs);
 		} else if (key.equals("update_frequency")) {
 			updateFrequencyPreference();
+		} else if (key.equals(WIDGET_ACTION)) {
+			updateWidgetActionPreference();
 		}
 	}
 
@@ -105,6 +115,11 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 	private void updateFrequencyPreference() {
 		updateFrequencyPreference.setSummary(getString(R.string.settings_frequency,
 				((ListPreference) updateFrequencyPreference).getEntry()));
+	}
+
+	private void updateWidgetActionPreference() {
+		widgetActionPreference.setSummary(getString(R.string.settings_widget_action,
+				((ListPreference) widgetActionPreference).getEntry()));
 	}
 
 }

@@ -33,6 +33,10 @@
 	<string
 		name="settings_auto_topups_disabled">Top-up info will not be updated.</string>
 	<string
+		name="widget_action">Widget tap action</string>
+	<string
+		name="settings_widget_action">%s when the widget is tapped.</string>
+	<string
 		name="update">Update</string>
 	<string
 		name="topup">Topup</string>

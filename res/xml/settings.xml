@@ -15,6 +15,16 @@
 		android:password="true" />
 
 	<PreferenceCategory
+		android:title="Widget" />
+
+	<ListPreference
+		android:title="@string/widget_action"
+		android:key="widget_action"
+		android:defaultValue="0"
+		android:entries="@array/widget_actions"
+		android:entryValues="@array/widget_actions_values" />
+
+	<PreferenceCategory
 		android:title="@string/auto_update" />
 
 	<ListPreference

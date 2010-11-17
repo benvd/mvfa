@@ -54,7 +54,9 @@
 				<action
 					android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 				<action
-					android:name="be.benvd.mvforandroid.UpdateDataFromWidget" />
+					android:name="be.benvd.mvforandroid.onWidgetClick" />
+				<action
+					android:name="be.benvd.mvforandroid.data.CreditUpdated" />
 			</intent-filter>
 			<meta-data
 				android:name="android.appwidget.provider"
