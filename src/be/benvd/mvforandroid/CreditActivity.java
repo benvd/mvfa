@@ -210,7 +210,8 @@ public class CreditActivity extends Activity {
 
 				long remainingTime = helper.credit.getValidUntil() - System.currentTimeMillis();
 				long oneMonthInMillis = 30 * 24 * 3600000;
-				double ratio = remainingTime / oneMonthInMillis;
+				double ratio = (double) remainingTime / oneMonthInMillis;
+
 				if (ratio < RATIO_THRESHOLD)
 					validText.setTextColor(0xffa51d1d);
 
