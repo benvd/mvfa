@@ -89,6 +89,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 			updateTopupsPreference(prefs);
 		} else if (key.equals("update_frequency")) {
 			updateFrequencyPreference();
+			rescheduleService();
 		} else if (key.equals(WIDGET_ACTION)) {
 			updateWidgetActionPreference();
 		}
@@ -115,6 +116,16 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 	private void updateFrequencyPreference() {
 		updateFrequencyPreference.setSummary(getString(R.string.settings_frequency,
 				((ListPreference) updateFrequencyPreference).getEntry()));
+	}
+
+	private void rescheduleService() {
+		Intent stop = new Intent(this, MVDataService.class);
+		stop.setAction(MVDataService.STOP_SERVICE);
+		WakefulIntentService.sendWakefulWork(this, stop);
+
+		Intent start = new Intent(this, MVDataService.class);
+		start.setAction(MVDataService.SCHEDULE_SERVICE);
+		WakefulIntentService.sendWakefulWork(this, start);
 	}
 
 	private void updateWidgetActionPreference() {

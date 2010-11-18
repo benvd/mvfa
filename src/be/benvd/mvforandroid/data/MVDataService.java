@@ -87,7 +87,7 @@ public class MVDataService extends WakefulIntentService {
 		helper = new DatabaseHelper(this);
 		alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
-		Intent i = new Intent(this, OnAlarmReceiver.class);
+		Intent i = new Intent(this, ScheduleServiceReceiver.class);
 		wakefulWorkIntent = PendingIntent.getBroadcast(this, 0, i, 0);
 	}
 
@@ -131,6 +131,7 @@ public class MVDataService extends WakefulIntentService {
 					updateTopups();
 				scheduleNextUpdate();
 			} else if (action.equals(STOP_SERVICE)) {
+				Log.v("MVFA", "stopping service");
 				alarm.cancel(wakefulWorkIntent);
 				stopSelf();
 			} else if (action.equals(SCHEDULE_SERVICE)) {

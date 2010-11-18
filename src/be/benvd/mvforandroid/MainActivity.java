@@ -73,8 +73,6 @@ public class MainActivity extends TabActivity {
 			public void onClick(DialogInterface dialog, int which) {
 				saveCredentials(username.getText().toString(), password.getText().toString());
 
-				// FIXME: This takes care of starting the service after app installation. We still need to add an
-				// OnBootReceiver to start the service after a reboot.
 				Intent i = new Intent(MainActivity.this, MVDataService.class);
 				i.setAction(MVDataService.SCHEDULE_SERVICE);
 				WakefulIntentService.sendWakefulWork(MainActivity.this, i);

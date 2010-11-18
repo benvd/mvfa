@@ -23,7 +23,7 @@ import android.content.Intent;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-public class OnAlarmReceiver extends BroadcastReceiver {
+public class ScheduleServiceReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
