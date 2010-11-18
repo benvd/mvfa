@@ -35,8 +35,6 @@ import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-// FIXME: Add layout-land widget.xml
-
 public class WidgetProvider extends AppWidgetProvider {
 
 	public static final String ON_WIDGET_CLICK = "be.benvd.mvforandroid.onWidgetClick";

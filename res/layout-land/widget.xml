@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/widget_layout"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="horizontal"
+	android:background="@drawable/appwidget_bg">
+
+	<LinearLayout
+		android:layout_width="0dip"
+		android:layout_weight="1"
+		android:layout_height="fill_parent"
+		android:orientation="vertical"
+		android:gravity="center">
+
+		<ImageView
+			android:id="@+id/credit_img"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/widget_credit" />
+
+		<TextView
+			android:id="@+id/credit_text"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textStyle="bold"
+			android:textSize="16sp"
+			android:textColor="#ffffff" />
+
+	</LinearLayout>
+
+	<ImageView
+		android:layout_width="1dip"
+		android:layout_height="fill_parent"
+		android:background="@drawable/appwidget_divider" />
+
+	<LinearLayout
+		android:layout_width="0dip"
+		android:layout_weight="1"
+		android:layout_height="fill_parent"
+		android:orientation="vertical"
+		android:gravity="center">
+
+		<ImageView
+			android:id="@+id/sms_img"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/widget_sms" />
+
+		<TextView
+			android:id="@+id/sms_text"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textStyle="bold"
+			android:textSize="16sp"
+			android:textColor="#ffffff" />
+
+	</LinearLayout>
+
+	<ImageView
+		android:layout_width="1dip"
+		android:layout_height="fill_parent"
+		android:background="@drawable/appwidget_divider" />
+
+	<LinearLayout
+		android:layout_width="0dip"
+		android:layout_weight="1"
+		android:layout_height="fill_parent"
+		android:orientation="vertical"
+		android:gravity="center">
+
+		<ImageView
+			android:id="@+id/data_img"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/widget_data" />
+
+		<TextView
+			android:id="@+id/data_text"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textStyle="bold"
+			android:textSize="16sp"
+			android:textColor="#ffffff" />
+
+	</LinearLayout>
+
+</LinearLayout> 
