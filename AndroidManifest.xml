@@ -44,7 +44,11 @@
 		</service>
 
 		<receiver
-			android:name=".data.ScheduleAlarmReceiver">
+			android:name=".data.OnAlarmReceiver">
+		</receiver>
+
+		<receiver
+			android:name=".data.OnBootReceiver">
 			<intent-filter>
 				<action
 					android:name="android.intent.action.BOOT_COMPLETED" />

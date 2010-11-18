@@ -23,12 +23,12 @@ import android.content.Intent;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-public class ScheduleServiceReceiver extends BroadcastReceiver {
+public class OnBootReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Intent i = new Intent(context.getApplicationContext(), MVDataService.class);
-		i.setAction(MVDataService.UPDATE_ALL);
+		i.setAction(MVDataService.SCHEDULE_SERVICE);
 		WakefulIntentService.sendWakefulWork(context, i);
 	}
 

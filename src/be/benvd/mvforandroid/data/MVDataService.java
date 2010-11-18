@@ -85,7 +85,7 @@ public class MVDataService extends WakefulIntentService {
 		helper = new DatabaseHelper(this);
 		alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
-		Intent i = new Intent(this, ScheduleServiceReceiver.class);
+		Intent i = new Intent(this, OnAlarmReceiver.class);
 		wakefulWorkIntent = PendingIntent.getBroadcast(this, 0, i, 0);
 	}
 
