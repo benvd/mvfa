@@ -35,7 +35,6 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import be.benvd.mvforandroid.MainActivity;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
@@ -81,7 +80,6 @@ public class MVDataService extends WakefulIntentService {
 
 	@Override
 	public void onCreate() {
-		Log.v("DEBUG", "onCreate()");
 		super.onCreate();
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		helper = new DatabaseHelper(this);
@@ -97,12 +95,11 @@ public class MVDataService extends WakefulIntentService {
 	private void scheduleNextUpdate() {
 		long delay = Long.parseLong(prefs.getString("update_frequency", "86400000"));
 		alarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + delay, wakefulWorkIntent);
-		Log.d(MainActivity.TAG, "Scheduled update in " + delay + "ms.");
+		Log.v(MVDataService.class.getSimpleName(), "Update scheduled in " + delay + "ms");
 	}
 
 	@Override
 	public void onDestroy() {
-		Log.v("DEBUG", "onDestroy()");
 		super.onDestroy();
 		helper.close();
 	}
@@ -112,7 +109,6 @@ public class MVDataService extends WakefulIntentService {
 	 */
 	@Override
 	protected void doWakefulWork(Intent intent) {
-		Log.v("DEBUG", "intent: " + intent);
 		String action = intent.getAction();
 		try {
 			if (action.equals(UPDATE_CREDIT)) {
@@ -131,7 +127,7 @@ public class MVDataService extends WakefulIntentService {
 					updateTopups();
 				scheduleNextUpdate();
 			} else if (action.equals(STOP_SERVICE)) {
-				Log.v("MVFA", "stopping service");
+				Log.v(MVDataService.class.getSimpleName(), "Update canceled");
 				alarm.cancel(wakefulWorkIntent);
 				stopSelf();
 			} else if (action.equals(SCHEDULE_SERVICE)) {
@@ -159,7 +155,7 @@ public class MVDataService extends WakefulIntentService {
 						"amount"));
 		edit.putFloat(MVDataHelper.PRICE_PLAN_TOPUP_AMOUNT, Float.parseFloat(json.getString("top_up_amount")));
 		edit.commit();
-		Log.i(MainActivity.TAG, "Updated price plan");
+		Log.v(MVDataService.class.getSimpleName(), "Updated price plan");
 	}
 
 	private void updateCredit() throws JSONException, IOException {
@@ -169,7 +165,7 @@ public class MVDataService extends WakefulIntentService {
 		String response = MVDataHelper.getResponse(username, password, URL_CREDIT);
 		helper.credit.update(new JSONObject(response));
 		sendBroadcast(creditBroadcast);
-		Log.i(MainActivity.TAG, "Updated credit");
+		Log.v(MVDataService.class.getSimpleName(), "Updated credit");
 	}
 
 	private void updateUsage() throws IOException, JSONException {
@@ -188,12 +184,10 @@ public class MVDataService extends WakefulIntentService {
 			url += "?from_date=" + start + "&until_date=" + end;
 		}
 
-		Log.v("DEBUG", url);
-
 		String response = MVDataHelper.getResponse(username, password, url);
 		helper.usage.update(new JSONArray(response));
 		sendBroadcast(usageBroadcast);
-		Log.i(MainActivity.TAG, "Updated usage");
+		Log.v(MVDataService.class.getSimpleName(), "Updated usage");
 	}
 
 	private void updateTopups() throws IOException, JSONException {
@@ -202,7 +196,7 @@ public class MVDataService extends WakefulIntentService {
 		String response = MVDataHelper.getResponse(username, password, URL_TOPUPS);
 		helper.topups.update(new JSONArray(response), false);
 		sendBroadcast(topupsBroadcast);
-		Log.i(MainActivity.TAG, "Updated topups");
+		Log.v(MVDataService.class.getSimpleName(), "Updated topups");
 	}
 
 }

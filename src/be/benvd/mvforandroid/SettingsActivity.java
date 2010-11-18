@@ -46,18 +46,8 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.settings);
 
-		autoCreditPreference = getPreferenceScreen().findPreference("auto_credit");
-		autoUsagePreference = getPreferenceScreen().findPreference("auto_usage");
-		autoTopupsPreference = getPreferenceScreen().findPreference("auto_topups");
-		updateCreditPreference(getPreferenceScreen().getSharedPreferences());
-		updateUsagePreference(getPreferenceScreen().getSharedPreferences());
-		updateTopupsPreference(getPreferenceScreen().getSharedPreferences());
-
-		updateFrequencyPreference = getPreferenceScreen().findPreference("update_frequency");
-		updateFrequencyPreference();
-
-		widgetActionPreference = getPreferenceScreen().findPreference(WIDGET_ACTION);
-		updateWidgetActionPreference();
+		findPreferences();
+		updatePreferences();
 	}
 
 	@Override
@@ -74,11 +64,24 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-		if (!(prefs.getBoolean("auto_credit", false) || prefs.getBoolean("auto_usage", false) || prefs.getBoolean(
-				"auto_topups", false))) {
-			Intent intent = new Intent(this, MVDataService.class);
-			intent.setAction(MVDataService.STOP_SERVICE);
-			WakefulIntentService.sendWakefulWork(this, intent);
+		if (key.equals("auto_credit") || key.equals("auto_usage") || key.equals("auto_topups")) {
+			switch (getNumEnabledAutoUpdates(prefs)) {
+			case 0: {
+				// An auto update preference has changed, and as a result none of them are enabled anymore. This means
+				// we don't need to auto update anything and we can stop the service.
+				stopService();
+				break;
+			}
+			case 1: {
+				// At this point, exactly one of the auto updates is enabled, so the possibility exists that it was
+				// enabled just now, and as such that the service is stopped and needs to be rescheduled. In other
+				// words, if the currently modified preference is enabled, it is also the *only* auto update preference
+				// that is enabled. Therefore the service has to be started.
+				if (prefs.getBoolean(key, false))
+					startService();
+				break;
+			}
+			}
 		}
 
 		if (key.equals("auto_credit")) {
@@ -89,10 +92,40 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 			updateTopupsPreference(prefs);
 		} else if (key.equals("update_frequency")) {
 			updateFrequencyPreference();
-			rescheduleService();
+			if (getNumEnabledAutoUpdates(prefs) != 0) {
+				stopService();
+				startService();
+			}
 		} else if (key.equals(WIDGET_ACTION)) {
 			updateWidgetActionPreference();
 		}
+	}
+
+	private void findPreferences() {
+		autoCreditPreference = getPreferenceScreen().findPreference("auto_credit");
+		autoUsagePreference = getPreferenceScreen().findPreference("auto_usage");
+		autoTopupsPreference = getPreferenceScreen().findPreference("auto_topups");
+		updateFrequencyPreference = getPreferenceScreen().findPreference("update_frequency");
+		widgetActionPreference = getPreferenceScreen().findPreference(WIDGET_ACTION);
+	}
+
+	private void updatePreferences() {
+		updateCreditPreference(getPreferenceScreen().getSharedPreferences());
+		updateUsagePreference(getPreferenceScreen().getSharedPreferences());
+		updateTopupsPreference(getPreferenceScreen().getSharedPreferences());
+		updateFrequencyPreference();
+		updateWidgetActionPreference();
+	}
+
+	private int getNumEnabledAutoUpdates(SharedPreferences prefs) {
+		int result = 0;
+		if (prefs.getBoolean("auto_credit", false))
+			result++;
+		if (prefs.getBoolean("auto_usage", false))
+			result++;
+		if (prefs.getBoolean("auto_topups", false))
+			result++;
+		return result;
 	}
 
 	private void updateCreditPreference(SharedPreferences sharedPreferences) {
@@ -118,19 +151,21 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 				((ListPreference) updateFrequencyPreference).getEntry()));
 	}
 
-	private void rescheduleService() {
-		Intent stop = new Intent(this, MVDataService.class);
-		stop.setAction(MVDataService.STOP_SERVICE);
-		WakefulIntentService.sendWakefulWork(this, stop);
-
-		Intent start = new Intent(this, MVDataService.class);
-		start.setAction(MVDataService.SCHEDULE_SERVICE);
-		WakefulIntentService.sendWakefulWork(this, start);
-	}
-
 	private void updateWidgetActionPreference() {
 		widgetActionPreference.setSummary(getString(R.string.settings_widget_action,
 				((ListPreference) widgetActionPreference).getEntry()));
+	}
+
+	private void stopService() {
+		Intent stop = new Intent(this, MVDataService.class);
+		stop.setAction(MVDataService.STOP_SERVICE);
+		WakefulIntentService.sendWakefulWork(this, stop);
+	}
+
+	private void startService() {
+		Intent start = new Intent(this, MVDataService.class);
+		start.setAction(MVDataService.SCHEDULE_SERVICE);
+		WakefulIntentService.sendWakefulWork(this, start);
 	}
 
 }

@@ -34,7 +34,6 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
@@ -74,7 +73,6 @@ public class CreditActivity extends Activity {
 	private BroadcastReceiver refreshReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			Log.v("DEBUG", "executing broadcastReceiver");
 			((Button) findViewById(R.id.update_button)).performClick();
 		}
 	};

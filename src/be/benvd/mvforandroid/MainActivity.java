@@ -27,7 +27,6 @@ import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,7 +41,6 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 public class MainActivity extends TabActivity {
 
-	public static final String TAG = "MVFA";
 	private static final String FIRST_TIME = "be.benvd.mvforandroid.FirstTime";
 	private SharedPreferences prefs;
 
@@ -82,7 +80,6 @@ public class MainActivity extends TabActivity {
 				// Should have credentials now, let's force a refresh of the credits overview. We can't just broadcast
 				// to the MVDataService, since we want visual confirmation in CreditsActivity that the update is in
 				// progress, so we need to go through it.
-				Log.v("DEBUG", "sending broadcast");
 				sendBroadcast(new Intent(CreditActivity.ACTION_REFRESH));
 			}
 

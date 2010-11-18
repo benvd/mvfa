@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.RemoteViews;
 import be.benvd.mvforandroid.MainActivity;
 import be.benvd.mvforandroid.R;
@@ -41,7 +40,6 @@ public class WidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-		Log.v("DEBUG", "onUpdate");
 		int amount = appWidgetIds.length;
 
 		for (int i = 0; i < amount; i++) {
