@@ -11,6 +11,8 @@
 	<string
 		name="settings">Settings</string>
 	<string
+		name="about">About</string>
+	<string
 		name="username">Username</string>
 	<string
 		name="password">Password</string>
@@ -61,7 +63,5 @@
 	<string
 		name="exception_message">Could not connect. Make sure your internet connection is working and your credentials are correct. [error: %s]
 	</string>
-	<string
-		name="widget">Mobile Vikings</string>
 
 </resources>

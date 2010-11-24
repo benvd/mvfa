@@ -20,13 +20,22 @@ package be.benvd.mvforandroid;
 import my.android.app.TabActivity;
 import my.android.widget.TabHost;
 import my.android.widget.TabHost.OnTabChangeListener;
+import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.method.LinkMovementMethod;
+import android.text.style.URLSpan;
+import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -109,9 +118,59 @@ public class MainActivity extends TabActivity {
 				Intent intent = new Intent(this, SettingsActivity.class);
 				startActivity(intent);
 				return true;
+			case R.id.about:
+				showAboutDialog();
+				return true;
 		}
 
 		return false;
+	}
+
+	private void showAboutDialog() {
+		Builder builder = new Builder(this);
+		builder.setIcon(android.R.drawable.ic_dialog_info);
+		builder.setTitle(getString(R.string.about));
+		builder.setMessage(getAboutMessage());
+		builder.setPositiveButton(getString(android.R.string.ok), null);
+		AlertDialog dialog = builder.create();
+		dialog.show();
+		allowClickableLinks(dialog);
+	}
+
+	private CharSequence getAboutMessage() {
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(getString(R.string.app_name));
+		stringBuilder.append(" ");
+		stringBuilder.append(getVersionName());
+		stringBuilder.append("\n\n");
+		stringBuilder.append("http://github.com/benvd/mvfa\nhttp://benvd.be/mvfa\n\n");
+		stringBuilder.append("@benvandaele\nvandaeleben@gmail.com");
+
+		SpannableStringBuilder message = new SpannableStringBuilder(stringBuilder.toString());
+		Linkify.addLinks(message, Linkify.EMAIL_ADDRESSES | Linkify.WEB_URLS);
+
+		int twitterStart = stringBuilder.toString().indexOf("@benvandaele");
+		int twitterEnd = twitterStart + "@benvandaele".length();
+		message.setSpan(new URLSpan("http://twitter.com/benvandaele"), twitterStart, twitterEnd,
+				Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		return message;
+	}
+
+	private String getVersionName() {
+		try {
+			ComponentName componentName = new ComponentName(this, MainActivity.class);
+			PackageInfo info = getPackageManager().getPackageInfo(componentName.getPackageName(), 0);
+			return info.versionName;
+		} catch (NameNotFoundException e) {
+			// Won't happen, versionName is present in the manifest!
+			return "";
+		}
+	}
+
+	private void allowClickableLinks(AlertDialog dialog) {
+		TextView message = (TextView) dialog.findViewById(android.R.id.message);
+		message.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 
 	private void setupTabHost() {
