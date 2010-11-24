@@ -232,9 +232,9 @@ public class UsageActivity extends Activity {
 
 	private static String formatBytes(Context c, long bytes) {
 		if (bytes < 1048576) {
-			return dataFormat.format((double) bytes / 1024) + " " + c.getString(R.string.kilobytes);
+			return c.getString(R.string.kilobytes, dataFormat.format((double) bytes / 1024));
 		} else {
-			return dataFormat.format((double) bytes / 1048576) + " " + c.getString(R.string.megabytes);
+			return c.getString(R.string.megabytes, dataFormat.format((double) bytes / 1048576));
 		}
 	}
 

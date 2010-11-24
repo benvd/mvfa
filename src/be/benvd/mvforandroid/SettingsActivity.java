@@ -66,21 +66,23 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		if (key.equals("auto_credit") || key.equals("auto_usage") || key.equals("auto_topups")) {
 			switch (getNumEnabledAutoUpdates(prefs)) {
-			case 0: {
-				// An auto update preference has changed, and as a result none of them are enabled anymore. This means
-				// we don't need to auto update anything and we can stop the service.
-				stopService();
-				break;
-			}
-			case 1: {
-				// At this point, exactly one of the auto updates is enabled, so the possibility exists that it was
-				// enabled just now, and as such that the service is stopped and needs to be rescheduled. In other
-				// words, if the currently modified preference is enabled, it is also the *only* auto update preference
-				// that is enabled. Therefore the service has to be started.
-				if (prefs.getBoolean(key, false))
-					startService();
-				break;
-			}
+				case 0: {
+					// An auto update preference has changed, and as a result none of them are enabled anymore. This
+					// means
+					// we don't need to auto update anything and we can stop the service.
+					stopService();
+					break;
+				}
+				case 1: {
+					// At this point, exactly one of the auto updates is enabled, so the possibility exists that it was
+					// enabled just now, and as such that the service is stopped and needs to be rescheduled. In other
+					// words, if the currently modified preference is enabled, it is also the *only* auto update
+					// preference
+					// that is enabled. Therefore the service has to be started.
+					if (prefs.getBoolean(key, false))
+						startService();
+					break;
+				}
 			}
 		}
 

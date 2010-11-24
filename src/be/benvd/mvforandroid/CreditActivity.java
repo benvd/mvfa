@@ -159,70 +159,70 @@ public class CreditActivity extends Activity {
 		@Override
 		protected View newView(int position, ViewGroup parent) {
 			switch (position) {
-			case REMAINING_CREDIT: {
-				double remainingCredit = helper.credit.getRemainingCredit();
-				View view = getLayoutInflater().inflate(R.layout.credit_credit, parent, false);
-				TextView text = (TextView) view.findViewById(R.id.credit_text);
-				text.setText(formatCurrency(remainingCredit) + " " + getString(R.string.remaining));
+				case REMAINING_CREDIT: {
+					double remainingCredit = helper.credit.getRemainingCredit();
+					View view = getLayoutInflater().inflate(R.layout.credit_credit, parent, false);
+					TextView text = (TextView) view.findViewById(R.id.credit_text);
+					text.setText(getString(R.string.remaining, formatCurrency(remainingCredit)));
 
-				float ratio = ((float) remainingCredit / prefs.getFloat(MVDataHelper.PRICE_PLAN_TOPUP_AMOUNT, 15));
-				view.setBackgroundDrawable(getProgressBackground(ratio));
+					float ratio = ((float) remainingCredit / prefs.getFloat(MVDataHelper.PRICE_PLAN_TOPUP_AMOUNT, 15));
+					view.setBackgroundDrawable(getProgressBackground(ratio));
 
-				if (ratio < RATIO_THRESHOLD)
-					text.setTextColor(0xffa51d1d);
+					if (ratio < RATIO_THRESHOLD)
+						text.setTextColor(0xffa51d1d);
 
-				return view;
-			}
-			case REMAINING_SMS: {
-				int remainingSms = helper.credit.getRemainingSms();
-				View view = getLayoutInflater().inflate(R.layout.credit_sms, parent, false);
-				TextView text = (TextView) view.findViewById(R.id.sms_text);
-				text.setText(remainingSms + " " + getString(R.string.sms_remaining));
+					return view;
+				}
+				case REMAINING_SMS: {
+					int remainingSms = helper.credit.getRemainingSms();
+					View view = getLayoutInflater().inflate(R.layout.credit_sms, parent, false);
+					TextView text = (TextView) view.findViewById(R.id.sms_text);
+					text.setText(getString(R.string.sms_remaining, remainingSms));
 
-				float ratio = ((float) remainingSms / prefs.getInt(MVDataHelper.PRICE_PLAN_SMS_AMOUNT, 1000));
-				view.setBackgroundDrawable(getProgressBackground(ratio));
+					float ratio = ((float) remainingSms / prefs.getInt(MVDataHelper.PRICE_PLAN_SMS_AMOUNT, 1000));
+					view.setBackgroundDrawable(getProgressBackground(ratio));
 
-				if (ratio < RATIO_THRESHOLD)
-					text.setTextColor(0xffa51d1d);
+					if (ratio < RATIO_THRESHOLD)
+						text.setTextColor(0xffa51d1d);
 
-				return view;
-			}
-			case REMAINING_DATA: {
-				long remainingBytes = helper.credit.getRemainingData();
-				View view = getLayoutInflater().inflate(R.layout.credit_data, parent, false);
-				TextView text = (TextView) view.findViewById(R.id.data_text);
-				text.setText((remainingBytes / 1048576) + " " + getString(R.string.megabytes_remaining));
+					return view;
+				}
+				case REMAINING_DATA: {
+					long remainingBytes = helper.credit.getRemainingData();
+					View view = getLayoutInflater().inflate(R.layout.credit_data, parent, false);
+					TextView text = (TextView) view.findViewById(R.id.data_text);
+					text.setText(getString(R.string.megabytes_remaining, (remainingBytes / 1048576)));
 
-				double ratio = ((double) remainingBytes / ((long) prefs.getInt(MVDataHelper.PRICE_PLAN_DATA_AMOUNT,
-						1024) * 1024 * 1024));
-				view.setBackgroundDrawable(getProgressBackground(ratio));
+					double ratio = ((double) remainingBytes / ((long) prefs.getInt(MVDataHelper.PRICE_PLAN_DATA_AMOUNT,
+							1024) * 1024 * 1024));
+					view.setBackgroundDrawable(getProgressBackground(ratio));
 
-				if (ratio < RATIO_THRESHOLD)
-					text.setTextColor(0xffa51d1d);
+					if (ratio < RATIO_THRESHOLD)
+						text.setTextColor(0xffa51d1d);
 
-				return view;
-			}
-			case VALID_UNTIL: {
-				View view = getLayoutInflater().inflate(R.layout.credit_extra, parent, false);
-				TextView validText = (TextView) view.findViewById(R.id.valid_until);
-				validText.setText(getString(R.string.valid_until) + " "
-						+ formatValidUntilDate(helper.credit.getValidUntil()));
+					return view;
+				}
+				case VALID_UNTIL: {
+					View view = getLayoutInflater().inflate(R.layout.credit_extra, parent, false);
+					TextView validText = (TextView) view.findViewById(R.id.valid_until);
+					validText.setText(getString(R.string.valid_until, formatValidUntilDate(helper.credit
+							.getValidUntil())));
 
-				long remainingTime = helper.credit.getValidUntil() - System.currentTimeMillis();
-				long oneMonthInMillis = 30 * 24 * 3600000;
-				double ratio = (double) remainingTime / oneMonthInMillis;
+					long remainingTime = helper.credit.getValidUntil() - System.currentTimeMillis();
+					long oneMonthInMillis = 30 * 24 * 3600000;
+					double ratio = (double) remainingTime / oneMonthInMillis;
 
-				if (ratio < RATIO_THRESHOLD)
-					validText.setTextColor(0xffa51d1d);
+					if (ratio < RATIO_THRESHOLD)
+						validText.setTextColor(0xffa51d1d);
 
-				TextView planText = (TextView) view.findViewById(R.id.price_plan);
-				String planName = prefs.getString(MVDataHelper.PRICE_PLAN_NAME, null);
-				if (planName == null)
-					planText.setVisibility(View.GONE);
-				planText.setText(getString(R.string.price_plan) + ": " + planName);
+					TextView planText = (TextView) view.findViewById(R.id.price_plan);
+					String planName = prefs.getString(MVDataHelper.PRICE_PLAN_NAME, null);
+					if (planName == null)
+						planText.setVisibility(View.GONE);
+					planText.setText(getString(R.string.price_plan, planName));
 
-				return view;
-			}
+					return view;
+				}
 			}
 			return null;
 		}

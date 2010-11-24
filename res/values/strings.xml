@@ -43,21 +43,21 @@
 	<string
 		name="topup">Topup</string>
 	<string
-		name="remaining">remaining</string>
+		name="remaining">%s remaining</string>
 	<string
-		name="megabytes_remaining">MB remaining</string>
+		name="megabytes_remaining">%s MB remaining</string>
 	<string
-		name="sms_remaining">SMS\'s remaining</string>
+		name="sms_remaining">%s SMS\'s remaining</string>
 	<string
-		name="valid_until">Valid until</string>
-	<string
-		name="price_plan">Plan</string>
-	<string
-		name="megabytes">MB</string>
-	<string
-		name="kilobytes">KB</string>
+		name="valid_until">Valid until %s</string>
 	<string
 		name="at_hour">at</string>
+	<string
+		name="price_plan">Plan: %s</string>
+	<string
+		name="megabytes">%s MB</string>
+	<string
+		name="kilobytes">%s KB</string>
 	<string
 		name="login_title">Login to Mobile Vikings</string>
 	<string
