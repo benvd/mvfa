@@ -57,7 +57,9 @@ public class TopupsActivity extends Activity {
 	private BroadcastReceiver exceptionReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			Toast.makeText(context, getString(R.string.exception_message), Toast.LENGTH_SHORT).show();
+			Exception e = (Exception) intent.getSerializableExtra(MVDataService.EXCEPTION);
+			Toast.makeText(context, getString(R.string.exception_message, e == null ? "null" : e.getClass().getName()),
+					Toast.LENGTH_LONG).show();
 			TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
 		}
 	};

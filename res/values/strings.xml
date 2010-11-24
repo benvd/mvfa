@@ -59,7 +59,7 @@
 	<string
 		name="login_title">Login to Mobile Vikings</string>
 	<string
-		name="exception_message">Could not connect. Make sure you entered the correct credentials and that your internet connection is working.
+		name="exception_message">Could not connect. Make sure your internet connection is working and your credentials are correct. [error: %s]
 	</string>
 	<string
 		name="widget">Mobile Vikings</string>

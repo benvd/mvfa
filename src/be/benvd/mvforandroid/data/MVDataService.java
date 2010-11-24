@@ -55,7 +55,7 @@ public class MVDataService extends WakefulIntentService {
 	public static final String CREDIT_UPDATED = "be.benvd.mvforandroid.data.CreditUpdated";
 	public static final String USAGE_UPDATED = "be.benvd.mvforandroid.data.UsageUpdated";
 	public static final String TOPUPS_UPDATED = "be.benvd.mvforandroid.data.TopupsUpdated";
-	public static final String EXCEPTION = "be.benvd.mvforandroid.data.TopupsUpdated";
+	public static final String EXCEPTION = "be.benvd.mvforandroid.data.Exception";
 	public static final String STOP_SERVICE = "be.benvd.mvforandroid.data.StopService";
 	public static final String SCHEDULE_SERVICE = "be.benvd.mvforandroid.data.ScheduleService";
 
