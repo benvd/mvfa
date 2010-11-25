@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string
+		name="app_name">Mobile Vikings for Android</string>
+	<string
+		name="credit">Crédit</string>
+	<string
+		name="usage">Usage</string>
+	<string
+		name="topups">Recharges</string>
+	<string
+		name="settings">Options</string>
+	<string
+		name="about">A propos</string>
+	<string
+		name="credentials">Identifiants</string>
+	<string
+		name="username">Nom d\'utilisateur</string>
+	<string
+		name="password">Mot de passe</string>
+	<string
+		name="auto_update">Mise à jour automatique</string>
+	<string
+		name="auto_update_frequency">Fréquence</string>
+	<string
+		name="settings_frequency">L\'application mettra à jour les infos toutes les %s.</string>
+	<string
+		name="settings_auto_credit_enabled">Les infos concernant le crédit seront mises à jour automatiquement.</string>
+	<string
+		name="settings_auto_credit_disabled">Les infos concernant le crédit ne seront pas mises à jour automatiquement.</string>
+	<string
+		name="settings_auto_usage_enabled">Les infos concernant l\'usage du jour seront mises à jour automatiquement.</string>
+	<string
+		name="settings_auto_usage_disabled">Les infos concernant l\'usage du jour ne seront pas mises à jour automatiquement.</string>
+	<string
+		name="settings_auto_topups_enabled">Les infos concernant les recharges seront mises à jour automatiquement.</string>
+	<string
+		name="settings_auto_topups_disabled">Les infos concernant les recharges ne seront pas mises à jour automatiquement.</string>
+	<string
+		name="widget_action">Action du widget</string>
+	<string
+		name="settings_widget_action">%s lorsque le widget est tapé.</string>
+	<string
+		name="update">Mettre à jour</string>
+	<string
+		name="remaining">%s restants</string>
+	<string
+		name="megabytes_remaining">%s MB restants</string>
+	<string
+		name="sms_remaining">%s SMS restants</string>
+	<string
+		name="valid_until">Valide jusqu\'au %s</string>
+	<string
+		name="at_hour">à</string>
+	<string
+		name="price_plan">Plan tarifaire: %s</string>
+	<string
+		name="megabytes">%s MB</string>
+	<string
+		name="kilobytes">%s KB</string>
+	<string
+		name="login_title">Connectez-vous à Mobile Vikings</string>
+	<string
+		name="exception_message">Impossible de se connecter. Vérifiez que votre connexion fonctionne et que vos identifiants sont corrects.
+		[erreur: %s]</string>
+
+</resources>

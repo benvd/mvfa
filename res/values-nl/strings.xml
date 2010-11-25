@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string
+		name="app_name">Mobile Vikings for Android</string>
+	<string
+		name="credit">Beltegoed</string>
+	<string
+		name="usage">Verbruik</string>
+	<string
+		name="topups">Herladingen</string>
+	<string
+		name="settings">Instellingen</string>
+	<string
+		name="about">Over</string>
+	<string
+		name="credentials">Gebruikersgegevens</string>
+	<string
+		name="username">Gebruikersnaam</string>
+	<string
+		name="password">Wachtwoord</string>
+	<string
+		name="auto_update">Automatische update</string>
+	<string
+		name="auto_update_frequency">Frequentie</string>
+	<string
+		name="settings_frequency">Applicatie wordt elke %s geüpdatet.</string>
+	<string
+		name="settings_auto_credit_enabled">Beltegoed wordt automatisch geüpdatet.</string>
+	<string
+		name="settings_auto_credit_disabled">Beltegoed wordt niet automatisch geüpdatet.</string>
+	<string
+		name="settings_auto_usage_enabled">Verbruik wordt automatisch geüpdatet.</string>
+	<string
+		name="settings_auto_usage_disabled">Verbruik wordt niet automatisch geüpdatet.</string>
+	<string
+		name="settings_auto_topups_enabled">Herladingen worden automatisch geüpdatet.</string>
+	<string
+		name="settings_auto_topups_disabled">Herladingen worden niet automatisch geüpdatet.</string>
+	<string
+		name="widget_action">Widgetactie</string>
+	<string
+		name="settings_widget_action">%s wanneer op widget geklikt wordt.</string>
+	<string
+		name="update">Update</string>
+	<string
+		name="remaining">%s resterend</string>
+	<string
+		name="megabytes_remaining">%s MB resterend</string>
+	<string
+		name="sms_remaining">%s SMS\'en resterend</string>
+	<string
+		name="valid_until">Geldig tot %s</string>
+	<string
+		name="at_hour"></string>
+	<string
+		name="price_plan">Tariefplan: %s</string>
+	<string
+		name="megabytes">%s MB</string>
+	<string
+		name="kilobytes">%s KB</string>
+	<string
+		name="login_title">Log in op Mobile Vikings</string>
+	<string
+		name="exception_message">Kon niet verbinden. Controleer of je internetverbinding werkt en je gebruikersgegevens kloppen. [fout: %s]
+	</string>
+
+</resources>

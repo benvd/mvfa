@@ -41,8 +41,6 @@
 	<string
 		name="update">Update</string>
 	<string
-		name="topup">Topup</string>
-	<string
 		name="remaining">%s remaining</string>
 	<string
 		name="megabytes_remaining">%s MB remaining</string>
