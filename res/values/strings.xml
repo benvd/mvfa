@@ -49,6 +49,8 @@
 	<string
 		name="sms_remaining">%s SMSs remaining</string>
 	<string
+		name="sms_son_remaining">%s SMSs to Mobile Vikings remaining</string>
+	<string
 		name="valid_until">Valid until %s</string>
 	<string
 		name="at_hour">at</string>

@@ -145,11 +145,12 @@ public class CreditActivity extends Activity {
 
 	class CreditAdapter extends SackOfViewsAdapter {
 
-		private static final int NUM_ROWS = 4;
+		private static final int NUM_ROWS = 5;
 		private static final int REMAINING_CREDIT = 0;
 		private static final int REMAINING_SMS = 1;
-		private static final int REMAINING_DATA = 2;
-		private static final int VALID_UNTIL = 3;
+		private static final int REMAINING_SMS_SON = 2;
+		private static final int REMAINING_DATA = 3;
+		private static final int VALID_UNTIL = 4;
 		private static final double RATIO_THRESHOLD = 0.10;
 
 		public CreditAdapter() {
@@ -178,6 +179,20 @@ public class CreditActivity extends Activity {
 					View view = getLayoutInflater().inflate(R.layout.credit_sms, parent, false);
 					TextView text = (TextView) view.findViewById(R.id.sms_text);
 					text.setText(getString(R.string.sms_remaining, remainingSms));
+
+					float ratio = ((float) remainingSms / prefs.getInt(MVDataHelper.PRICE_PLAN_SMS_AMOUNT, 1000));
+					view.setBackgroundDrawable(getProgressBackground(ratio));
+
+					if (ratio < RATIO_THRESHOLD)
+						text.setTextColor(0xffa51d1d);
+
+					return view;
+				}
+				case REMAINING_SMS_SON: {
+					int remainingSms = helper.credit.getRemainingSmsSuperOnNet();
+					View view = getLayoutInflater().inflate(R.layout.credit_sms_son, parent, false);
+					TextView text = (TextView) view.findViewById(R.id.sms_son_text);
+					text.setText(getString(R.string.sms_son_remaining, remainingSms));
 
 					float ratio = ((float) remainingSms / prefs.getInt(MVDataHelper.PRICE_PLAN_SMS_AMOUNT, 1000));
 					view.setBackgroundDrawable(getProgressBackground(ratio));

@@ -49,6 +49,8 @@
 	<string
 		name="sms_remaining">%s SMS\'en resterend</string>
 	<string
+		name="sms_son_remaining">%s SMS\'en naar Mobile Vikings resterend</string>
+	<string
 		name="valid_until">Geldig tot %s</string>
 	<string
 		name="at_hour"></string>

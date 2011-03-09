@@ -58,7 +58,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				+ "received_on INTEGER NOT NULL, " + "status TEXT NOT NULL);");
 		db.execSQL("CREATE TABLE IF NOT EXISTS " + Credit.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ "valid_until INTEGER NULL, " + "expired INTEGER NOT NULL, " + "sms INTEGER NOT NULL, "
-				+ "data INTEGER NOT NULL, " + "credits REAL NOT NULL, " + "price_plan TEXT NOT NULL);");
+				+ "data INTEGER NOT NULL, " + "credits REAL NOT NULL, " + "price_plan TEXT NOT NULL, "
+				+ "sms_son INTEGER NOT NULL);" );
 	}
 
 	@Override
@@ -82,7 +83,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		public void update(JSONObject json) throws JSONException {
 			Cursor query = getWritableDatabase()
-					.query(TABLE_NAME, new String[] { "_id" }, null, null, null, null, null);
+					.query(TABLE_NAME, new String[] { "_id" }, null, null, null, null, null, null);
 
 			ContentValues values = new ContentValues();
 
@@ -92,6 +93,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			values.put("data", Long.parseLong(json.getString("data")));
 			values.put("credits", Double.parseDouble(json.getString("credits")));
 			values.put("price_plan", json.getString("price_plan"));
+			values.put("sms_son", Integer.parseInt(json.getString("sms_super_on_net")));
 
 			if (query.getCount() == 0) {
 				// No credit info stored yet, insert a row
@@ -175,6 +177,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 			if (c.moveToFirst())
 				result = c.getInt(6);
+			else
+				result = 0;
+
+			c.close();
+			return result;
+		}
+
+		public int getRemainingSmsSuperOnNet() {
+			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
+			int result;
+
+			if (c.moveToFirst())
+				result = c.getInt(7);
 			else
 				result = 0;
 
