@@ -34,7 +34,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "mvforandroid.db";
-	private static final int SCHEMA_VERSION = 1;
+	private static final int SCHEMA_VERSION = 2;
 
 	public final Usage usage;
 	public final Credit credit;
@@ -64,7 +64,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		// We're still at the first version of our schema (see SCHEMA_VERSION), so this method will not be called.
+		if (oldVersion <= 1 && newVersion >= 2) {
+			db.execSQL("ALTER TABLE " + Credit.TABLE_NAME + " ADD COLUMN sms_son INTEGER NOT NULL;");
+		}
 	}
 
 	private static SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
