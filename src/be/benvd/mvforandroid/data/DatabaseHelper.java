@@ -67,11 +67,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		switch (oldVersion) {
 			case 1:
-				if (newVersion <= 2) {
+				if (newVersion < 2) {
 					return;
 				}
 				// add the column for super-on-net sms's
-				Log.i("[MVFA]", "ALTER TABLE " + Credit.TABLE_NAME + " ADD COLUMN sms_son INTEGER NOT NULL DEFAULT 0;");
 				db.execSQL("ALTER TABLE " + Credit.TABLE_NAME + " ADD COLUMN sms_son INTEGER NOT NULL DEFAULT 0;");
 		}
 	}
