@@ -30,6 +30,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -64,8 +65,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		if (oldVersion <= 1 && newVersion >= 2) {
-			db.execSQL("ALTER TABLE " + Credit.TABLE_NAME + " ADD COLUMN sms_son INTEGER NOT NULL;");
+		switch (oldVersion) {
+			case 1:
+				if (newVersion <= 2) {
+					return;
+				}
+				// add the column for super-on-net sms's
+				Log.i("[MVFA]", "ALTER TABLE " + Credit.TABLE_NAME + " ADD COLUMN sms_son INTEGER NOT NULL DEFAULT 0;");
+				db.execSQL("ALTER TABLE " + Credit.TABLE_NAME + " ADD COLUMN sms_son INTEGER NOT NULL DEFAULT 0;");
 		}
 	}
 
