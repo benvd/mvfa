@@ -159,8 +159,11 @@ public class MainActivity extends TabActivity
 		stringBuilder.append(" ");
 		stringBuilder.append(getVersionName());
 		stringBuilder.append("\n\n");
-		stringBuilder.append("http://github.com/benvd/mvfa\nhttp://benvd.be/mvfa\n\n");
-		stringBuilder.append("@benvandaele\nvandaeleben@gmail.com");
+		stringBuilder.append("http://github.com/benvd/mvfa\n");
+		stringBuilder.append("@benvandaele\nvandaeleben@gmail.com\n\n");
+		stringBuilder.append("http://github.com/fastlorenzo/mvfa\n");
+		stringBuilder.append("zio@djzio.be\n");
+
 
 		SpannableStringBuilder message = new SpannableStringBuilder(stringBuilder.toString());
 		Linkify.addLinks(message, Linkify.EMAIL_ADDRESSES | Linkify.WEB_URLS);
