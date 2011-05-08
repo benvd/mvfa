@@ -37,6 +37,10 @@
 	<string
 		name="settings_auto_topups_disabled">Herladingen worden niet automatisch geüpdatet.</string>
 	<string
+		name="select_msisdn">Selecteert nummer</string>
+	<string
+		name="settings_select_msisdn">Nummer %s zal worden gebruikt</string>
+	<string
 		name="widget_action">Widgetactie</string>
 	<string
 		name="settings_widget_action">%s wanneer op widget geklikt wordt.</string>

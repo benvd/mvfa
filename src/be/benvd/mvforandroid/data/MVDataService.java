@@ -38,12 +38,14 @@ import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-public class MVDataService extends WakefulIntentService {
+public class MVDataService extends WakefulIntentService
+	{
 
 	public final static String URL_USAGE = "https://mobilevikings.com/api/2.0/basic/usage.json";
 	public final static String URL_CREDIT = "https://mobilevikings.com/api/2.0/basic/sim_balance.json?add_price_plan=1";
 	public final static String URL_TOPUPS = "https://mobilevikings.com/api/2.0/basic/top_up_history.json";
 	public static final String URL_PRICE_PLAN = "https://mobilevikings.com/api/2.0/basic/price_plan_details.json";
+	public static final String URL_MSISDN = "https://mobilevikings.com/api/2.0/basic/msisdn_list.json";
 
 	public static final String UPDATE_ALL = "be.benvd.mvforandroid.data.Update";
 	public static final String UPDATE_CREDIT = "be.benvd.mvforandroid.data.UpdateCredit";
@@ -69,134 +71,204 @@ public class MVDataService extends WakefulIntentService {
 	private SharedPreferences prefs;
 	private DatabaseHelper helper;
 
+	private static String price_plan;
+	
+	private static MVDataService instance;
+	
+	public static MVDataService getInstance()
+		{
+		if(instance == null)
+			{
+			instance = new MVDataService();
+			}
+		return instance;
+		}
+	
 	@Override
-	public IBinder onBind(Intent arg0) {
+	public IBinder onBind(Intent arg0)
+		{
 		return null;
-	}
+		}
 
-	public MVDataService() {
+	public MVDataService()
+		{
 		super("MVDataService");
-	}
+		}
 
 	@Override
-	public void onCreate() {
+	public void onCreate()
+		{
 		super.onCreate();
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		helper = new DatabaseHelper(this);
 		alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
+		instance = this;
+		
 		Intent i = new Intent(this, OnAlarmReceiver.class);
 		wakefulWorkIntent = PendingIntent.getBroadcast(this, 0, i, 0);
-	}
+		}
 
 	/**
-	 * Schedules the next execution of doWakefulWork, using the frequency specified in the Preferences.
+	 * Schedules the next execution of doWakefulWork, using the frequency
+	 * specified in the Preferences.
 	 */
-	private void scheduleNextUpdate() {
+	private void scheduleNextUpdate()
+		{
 		long delay = Long.parseLong(prefs.getString("update_frequency", "86400000"));
 		alarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + delay, wakefulWorkIntent);
 		Log.v(MVDataService.class.getSimpleName(), "Update scheduled in " + delay + "ms");
-	}
+		}
 
 	@Override
-	public void onDestroy() {
+	public void onDestroy()
+		{
 		super.onDestroy();
 		helper.close();
-	}
+		}
 
 	/**
 	 * Does the actual work.
 	 */
 	@Override
-	protected void doWakefulWork(Intent intent) {
+	protected void doWakefulWork(Intent intent)
+		{
 		String action = intent.getAction();
-		try {
-			if (action.equals(UPDATE_CREDIT)) {
+		try
+			{
+			if(action.equals(UPDATE_CREDIT))
+				{
 				updateCredit();
-			} else if (action.equals(UPDATE_TOPUPS)) {
+				}
+			else if(action.equals(UPDATE_TOPUPS))
+				{
 				updateTopups();
-			} else if (action.equals(UPDATE_USAGE)) {
-				updateUsage(intent.getLongExtra(UPDATE_USAGE_STARTTIME, 0), intent
-						.getLongExtra(UPDATE_USAGE_ENDTIME, 0));
-			} else if (action.equals(UPDATE_ALL)) {
-				if (prefs.getBoolean("auto_credit", true))
+				}
+			else if(action.equals(UPDATE_USAGE))
+				{
+				updateUsage(intent.getLongExtra(UPDATE_USAGE_STARTTIME, 0), intent.getLongExtra(UPDATE_USAGE_ENDTIME, 0));
+				}
+			else if(action.equals(UPDATE_ALL))
+				{
+				if(prefs.getBoolean("auto_credit", true))
 					updateCredit();
-				if (prefs.getBoolean("auto_usage", false))
+				if(prefs.getBoolean("auto_usage", false))
 					updateUsage();
-				if (prefs.getBoolean("auto_topups", false))
+				if(prefs.getBoolean("auto_topups", false))
 					updateTopups();
 				scheduleNextUpdate();
-			} else if (action.equals(STOP_SERVICE)) {
+				}
+			else if(action.equals(STOP_SERVICE))
+				{
 				Log.v(MVDataService.class.getSimpleName(), "Update canceled");
 				alarm.cancel(wakefulWorkIntent);
 				stopSelf();
-			} else if (action.equals(SCHEDULE_SERVICE)) {
+				}
+			else if(action.equals(SCHEDULE_SERVICE))
+				{
 				scheduleNextUpdate();
+				}
 			}
-		} catch (IOException e) {
+		catch(IOException e)
+			{
 			exceptionBroadcast.putExtra(EXCEPTION, e);
 			sendBroadcast(exceptionBroadcast);
-		} catch (JSONException e) {
+			}
+		catch(JSONException e)
+			{
 			exceptionBroadcast.putExtra(EXCEPTION, e);
 			sendBroadcast(exceptionBroadcast);
+			}
 		}
-	}
 
-	private void updatePricePlan() throws JSONException, IOException {
+	private void updatePricePlan() throws JSONException, IOException
+		{
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
-		String response = MVDataHelper.getResponse(username, password, URL_PRICE_PLAN);
+		String response = MVDataHelper.getResponse(username, password, URL_PRICE_PLAN+"?msisdn="+prefs.getString("select_msisdn", null));
 		JSONObject json = new JSONObject(response);
+		price_plan = json.getString("name");
 		Editor edit = prefs.edit();
 		edit.putString(MVDataHelper.PRICE_PLAN_NAME, json.getString("name"));
-		edit.putInt(MVDataHelper.PRICE_PLAN_SMS_AMOUNT, json.getJSONArray("bundles").getJSONObject(0).getInt("amount"));
-		edit
-				.putInt(MVDataHelper.PRICE_PLAN_DATA_AMOUNT, json.getJSONArray("bundles").getJSONObject(1).getInt(
-						"amount"));
+		if(price_plan.equals("Data"))
+			{
+			edit.putInt(MVDataHelper.PRICE_PLAN_DATA_AMOUNT, json.getJSONArray("bundles").getJSONObject(0).getInt("amount"));	
+			}
+		else
+			{
+			edit.putInt(MVDataHelper.PRICE_PLAN_SMS_AMOUNT, json.getJSONArray("bundles").getJSONObject(0).getInt("amount"));
+			edit.putInt(MVDataHelper.PRICE_PLAN_DATA_AMOUNT, json.getJSONArray("bundles").getJSONObject(1).getInt("amount"));
+			}
 		edit.putFloat(MVDataHelper.PRICE_PLAN_TOPUP_AMOUNT, Float.parseFloat(json.getString("top_up_amount")));
 		edit.commit();
 		Log.v(MVDataService.class.getSimpleName(), "Updated price plan");
-	}
+		}
+	
+	public String[] getMsisdnList() throws JSONException, IOException
+		{
+		String[] msisdns;
+		//prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		String username = prefs.getString("username", null);
+		String password = prefs.getString("password", null);
+		String response = MVDataHelper.getResponse(username, password, URL_MSISDN);
+		JSONArray jsonArray = new JSONArray(response);
+		msisdns = new String[jsonArray.length()];
+		for(int i = 0; i < jsonArray.length(); i++)
+			{
+			msisdns[i] = jsonArray.getString(i);
+			Log.v(MVDataService.class.getSimpleName(),"MSISDN:"+jsonArray.getString(i));
+			}
+		Log.v(MVDataService.class.getSimpleName(), "Getting MSISDN list");
+//		helper.msisdns.getMsisdnList();
+		return msisdns;
+		}
 
-	private void updateCredit() throws JSONException, IOException {
+	private void updateCredit() throws JSONException, IOException
+		{
 		updatePricePlan();
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
-		String response = MVDataHelper.getResponse(username, password, URL_CREDIT);
-		helper.credit.update(new JSONObject(response));
+		String response = MVDataHelper.getResponse(username, password, URL_CREDIT+"&msisdn="+prefs.getString("select_msisdn", null));
+		if(price_plan.equals("Data"))
+			helper.credit.update(new JSONObject(response),true);
+		else
+			helper.credit.update(new JSONObject(response),false);
 		sendBroadcast(creditBroadcast);
 		Log.v(MVDataService.class.getSimpleName(), "Updated credit");
-	}
+		}
 
-	private void updateUsage() throws IOException, JSONException {
+	private void updateUsage() throws IOException, JSONException
+		{
 		updateUsage(0, 0);
-	}
+		}
 
-	private void updateUsage(long starttime, long endtime) throws IOException, JSONException {
+	private void updateUsage(long starttime, long endtime) throws IOException, JSONException
+		{
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
 
-		String url = URL_USAGE;
-		if (starttime != 0 && endtime != 0) {
+		String url = URL_USAGE+"?msisdn="+prefs.getString("select_msisdn", null);
+		if(starttime != 0 && endtime != 0)
+			{
 			SimpleDateFormat formatTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			String start = formatTime.format(new Date(starttime));
 			String end = formatTime.format(new Date(endtime));
-			url += "?from_date=" + start + "&until_date=" + end;
-		}
+			url += "&from_date=" + start + "&until_date=" + end;
+			}
 
 		String response = MVDataHelper.getResponse(username, password, url);
 		helper.usage.update(new JSONArray(response));
 		sendBroadcast(usageBroadcast);
 		Log.v(MVDataService.class.getSimpleName(), "Updated usage");
-	}
+		}
 
-	private void updateTopups() throws IOException, JSONException {
+	private void updateTopups() throws IOException, JSONException
+		{
 		String username = prefs.getString("username", null);
 		String password = prefs.getString("password", null);
-		String response = MVDataHelper.getResponse(username, password, URL_TOPUPS);
+		String response = MVDataHelper.getResponse(username, password, URL_TOPUPS+"?msisdn="+prefs.getString("select_msisdn", null));
 		helper.topups.update(new JSONArray(response), false);
 		sendBroadcast(topupsBroadcast);
 		Log.v(MVDataService.class.getSimpleName(), "Updated topups");
-	}
+		}
 
-}
+	}

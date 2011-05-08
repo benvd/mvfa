@@ -2,54 +2,60 @@
 <PreferenceScreen
 	xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<PreferenceCategory
-		android:title="@string/credentials" />
+	<PreferenceCategory	android:title="@string/credentials" >
+		<EditTextPreference
+			android:key="username"
+			android:title="@string/username" />
+	
+		<EditTextPreference
+			android:key="password"
+			android:title="@string/password"
+			android:password="true" />
+	</PreferenceCategory>
 
-	<EditTextPreference
-		android:key="username"
-		android:title="@string/username" />
+	<PreferenceCategory android:title="MSISDN" >
+		<ListPreference
+			android:title="@string/select_msisdn"
+			android:key="select_msisdn"
+			android:defaultValue="none"
+			android:entries="@array/select_msisdn"
+			android:entryValues="@array/select_msisdn_values" />
+	</PreferenceCategory>
+		
 
-	<EditTextPreference
-		android:key="password"
-		android:title="@string/password"
-		android:password="true" />
-
-	<PreferenceCategory
-		android:title="Widget" />
-
-	<ListPreference
-		android:title="@string/widget_action"
-		android:key="widget_action"
-		android:defaultValue="0"
-		android:entries="@array/widget_actions"
-		android:entryValues="@array/widget_actions_values" />
-
-	<PreferenceCategory
-		android:title="@string/auto_update" />
-
-	<ListPreference
-		android:title="@string/auto_update_frequency"
-		android:key="update_frequency"
-		android:defaultValue="86400000"
-		android:entries="@array/update_frequency_entries"
-		android:entryValues="@array/update_frequency_values" />
-
-	<CheckBoxPreference
-		android:key="auto_credit"
-		android:title="@string/credit"
-		android:summary="@string/settings_auto_credit_disabled"
-		android:defaultValue="true" />
-
-	<CheckBoxPreference
-		android:key="auto_usage"
-		android:title="@string/usage"
-		android:summary="@string/settings_auto_usage_disabled"
-		android:defaultValue="false" />
-
-	<CheckBoxPreference
-		android:key="auto_topups"
-		android:title="@string/topups"
-		android:summary="@string/settings_auto_topups_disabled"
-		android:defaultValue="false" />
-
+	<PreferenceCategory	android:title="Widget" >
+		<ListPreference
+			android:title="@string/widget_action"
+			android:key="widget_action"
+			android:defaultValue="0"
+			android:entries="@array/widget_actions"
+			android:entryValues="@array/widget_actions_values" />
+	</PreferenceCategory>
+	
+	<PreferenceCategory	android:title="@string/auto_update" >
+		<ListPreference
+			android:title="@string/auto_update_frequency"
+			android:key="update_frequency"
+			android:defaultValue="86400000"
+			android:entries="@array/update_frequency_entries"
+			android:entryValues="@array/update_frequency_values" />
+	
+		<CheckBoxPreference
+			android:key="auto_credit"
+			android:title="@string/credit"
+			android:summary="@string/settings_auto_credit_disabled"
+			android:defaultValue="true" />
+	
+		<CheckBoxPreference
+			android:key="auto_usage"
+			android:title="@string/usage"
+			android:summary="@string/settings_auto_usage_disabled"
+			android:defaultValue="false" />
+	
+		<CheckBoxPreference
+			android:key="auto_topups"
+			android:title="@string/topups"
+			android:summary="@string/settings_auto_topups_disabled"
+			android:defaultValue="false" />
+	</PreferenceCategory>
 </PreferenceScreen>
