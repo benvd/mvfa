@@ -31,7 +31,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class DatabaseHelper extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper
+	{
 
 	private static final String DATABASE_NAME = "mvforandroid.db";
 	private static final int SCHEMA_VERSION = 2;
@@ -39,173 +40,211 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public final Usage usage;
 	public final Credit credit;
 	public final Topups topups;
+	public final Msisdns msisdns;
 
-	public DatabaseHelper(Context context) {
+	public DatabaseHelper(Context context)
+		{
 		super(context, DATABASE_NAME, null, SCHEMA_VERSION);
 
 		this.usage = new Usage();
 		this.credit = new Credit();
 		this.topups = new Topups();
-	}
+		this.msisdns = new Msisdns();
+		}
 
 	@Override
-	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("CREATE TABLE IF NOT EXISTS " + Usage.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-				+ "timestamp INTEGER NOT NULL, " + "duration INTEGER, " + "type INTEGER, " + "incoming INTEGER, "
-				+ "contact TEXT, " + "cost REAL);");
-		db.execSQL("CREATE TABLE IF NOT EXISTS " + Topups.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-				+ "amount REAL NOT NULL, " + "method TEXT NOT NULL, " + "executed_on INTEGER NOT NULL, "
-				+ "received_on INTEGER NOT NULL, " + "status TEXT NOT NULL);");
-		db.execSQL("CREATE TABLE IF NOT EXISTS " + Credit.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-				+ "valid_until INTEGER NULL, " + "expired INTEGER NOT NULL, " + "sms INTEGER NOT NULL, "
-				+ "data INTEGER NOT NULL, " + "credits REAL NOT NULL, " + "price_plan TEXT NOT NULL, "
-				+ "sms_son INTEGER NOT NULL);" );
-	}
+	public void onCreate(SQLiteDatabase db)
+		{
+		db.execSQL("CREATE TABLE IF NOT EXISTS " + Usage.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, " + "timestamp INTEGER NOT NULL, "
+				+ "duration INTEGER, " + "type INTEGER, " + "incoming INTEGER, " + "contact TEXT, " + "cost REAL);");
+		db.execSQL("CREATE TABLE IF NOT EXISTS " + Topups.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, " + "amount REAL NOT NULL, "
+				+ "method TEXT NOT NULL, " + "executed_on INTEGER NOT NULL, " + "received_on INTEGER NOT NULL, " + "status TEXT NOT NULL);");
+		db.execSQL("CREATE TABLE IF NOT EXISTS " + Credit.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, " + "valid_until INTEGER NULL, "
+				+ "expired INTEGER NOT NULL, " + "sms INTEGER NOT NULL, " + "data INTEGER NOT NULL, " + "credits REAL NOT NULL, "
+				+ "price_plan TEXT NOT NULL, " + "sms_son INTEGER NOT NULL);");
+		db.execSQL("CREATE TABLE IF NOT EXISTS " + Msisdns.TABLE_NAME + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, " + "timestamp INTEGER NOT NULL, "
+				+ "msisdn TEXT);");
+		}
 
 	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		switch (oldVersion) {
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+		{
+		switch(oldVersion)
+			{
 			case 1:
-				if (newVersion < 2) {
+				if(newVersion < 2)
+					{
 					return;
-				}
+					}
 				// add the column for super-on-net sms's
 				db.execSQL("ALTER TABLE " + Credit.TABLE_NAME + " ADD COLUMN sms_son INTEGER NOT NULL DEFAULT 0;");
+			}
 		}
-	}
 
 	private static SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	private static Date getDateFromAPI(String dateString) {
-		try {
+	private static Date getDateFromAPI(String dateString)
+		{
+		try
+			{
 			return apiFormat.parse(dateString);
-		} catch (ParseException e) {
+			}
+		catch(ParseException e)
+			{
 			return null;
+			}
 		}
-	}
 
-	public class Credit {
+	public class Credit
+		{
 
 		private static final String TABLE_NAME = "credit";
 
-		public void update(JSONObject json) throws JSONException {
-			Cursor query = getWritableDatabase()
-					.query(TABLE_NAME, new String[] { "_id" }, null, null, null, null, null, null);
+		public void update(JSONObject json, boolean data_only) throws JSONException
+			{
+			Cursor query = getWritableDatabase().query(TABLE_NAME, new String[] { "_id" }, null, null, null, null, null, null);
 
 			ContentValues values = new ContentValues();
 
 			values.put("valid_until", getDateFromAPI(json.getString("valid_until")).getTime());
 			values.put("expired", (Boolean.parseBoolean(json.getString("is_expired")) ? 1 : 0));
-			values.put("sms", Integer.parseInt(json.getString("sms")));
-			values.put("data", Long.parseLong(json.getString("data")));
-			values.put("credits", Double.parseDouble(json.getString("credits")));
+			if(Boolean.parseBoolean(json.getString("is_expired"))==true)
+				{
+				values.put("data", 0);
+				values.put("credits", 0);
+				}
+			else
+				{
+				values.put("data", Long.parseLong(json.getString("data")));
+				values.put("credits", Double.parseDouble(json.getString("credits")));
+				}
 			values.put("price_plan", json.getString("price_plan"));
-			values.put("sms_son", Integer.parseInt(json.getString("sms_super_on_net")));
-
-			if (query.getCount() == 0) {
+			if(!data_only)
+				{
+				values.put("sms", Integer.parseInt(json.getString("sms")));
+				values.put("sms_son", Integer.parseInt(json.getString("sms_super_on_net")));
+				}
+			else
+				{
+				values.put("sms", 0);
+				values.put("sms_son", 0);
+				}
+				
+			if(query.getCount() == 0)
+				{
 				// No credit info stored yet, insert a row
 				getWritableDatabase().insert(TABLE_NAME, "valid_until", values);
-			} else {
+				}
+			else
+				{
 				// Credit info present already, so update it
 				getWritableDatabase().update(TABLE_NAME, values, null, null);
-			}
+				}
 
 			query.close();
-		}
+			}
 
-		public long getValidUntil() {
+		public long getValidUntil()
+			{
 			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			long result;
 
-			if (c.moveToFirst())
+			if(c.moveToFirst())
 				result = c.getLong(1);
 			else
 				result = 0;
 
 			c.close();
 			return result;
-		}
+			}
 
-		public boolean isExpired() {
+		public boolean isExpired()
+			{
 			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			boolean result;
 
-			if (c.moveToFirst())
+			if(c.moveToFirst())
 				result = c.getLong(2) == 1;
 			else
 				result = true;
 
 			c.close();
 			return result;
-		}
+			}
 
-		public int getRemainingSms() {
+		public int getRemainingSms()
+			{
 			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			int result;
 
-			if (c.moveToFirst())
+			if(c.moveToFirst())
 				result = c.getInt(3);
 			else
 				result = 0;
 
 			c.close();
 			return result;
-		}
+			}
 
-		public long getRemainingData() {
+		public long getRemainingData()
+			{
 			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			long result;
 
-			if (c.moveToFirst())
+			if(c.moveToFirst())
 				result = c.getLong(4);
 			else
 				result = 0;
 
 			c.close();
 			return result;
-		}
+			}
 
-		public double getRemainingCredit() {
+		public double getRemainingCredit()
+			{
 			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			double result;
 
-			if (c.moveToFirst())
+			if(c.moveToFirst())
 				result = c.getDouble(5);
 			else
 				result = 0;
 
 			c.close();
 			return result;
-		}
+			}
 
-		public int getPricePlan() {
+		public int getPricePlan()
+			{
 			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			int result;
 
-			if (c.moveToFirst())
+			if(c.moveToFirst())
 				result = c.getInt(6);
 			else
 				result = 0;
 
 			c.close();
 			return result;
-		}
+			}
 
-		public int getRemainingSmsSuperOnNet() {
+		public int getRemainingSmsSuperOnNet()
+			{
 			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
 			int result;
 
-			if (c.moveToFirst())
+			if(c.moveToFirst())
 				result = c.getInt(7);
 			else
 				result = 0;
 
 			c.close();
 			return result;
+			}
 		}
-	}
 
-	public class Usage {
+	public class Usage
+		{
 
 		private static final String TABLE_NAME = "usage";
 
@@ -216,19 +255,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		public static final int ORDER_BY_DATE = 1;
 
-		public void update(JSONArray jsonArray) throws JSONException {
+		public void update(JSONArray jsonArray) throws JSONException
+			{
 			getWritableDatabase().delete(TABLE_NAME, null, null);
 
 			getWritableDatabase().beginTransaction();
-			for (int i = 0; i < jsonArray.length(); i++) {
+			for(int i = 0; i < jsonArray.length(); i++)
+				{
 				JSONObject json = jsonArray.getJSONObject(i);
 				insert(json);
-			}
+				}
 			getWritableDatabase().setTransactionSuccessful();
 			getWritableDatabase().endTransaction();
-		}
+			}
 
-		public void insert(JSONObject json) throws JSONException {
+		public void insert(JSONObject json) throws JSONException
+			{
 
 			// "timestamp INTEGER NOT NULL, " +
 			// "duration INTEGER NOT NULL, " +
@@ -241,13 +283,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			values.put("timestamp", getDateFromAPI(json.getString("start_timestamp")).getTime());
 			values.put("duration", json.getLong("duration_connection"));
 
-			if (Boolean.parseBoolean(json.getString("is_data")))
+			if(Boolean.parseBoolean(json.getString("is_data")))
 				values.put("type", TYPE_DATA);
-			if (Boolean.parseBoolean(json.getString("is_sms")))
+			if(Boolean.parseBoolean(json.getString("is_sms")))
 				values.put("type", TYPE_SMS);
-			if (Boolean.parseBoolean(json.getString("is_voice")))
+			if(Boolean.parseBoolean(json.getString("is_voice")))
 				values.put("type", TYPE_VOICE);
-			if (Boolean.parseBoolean(json.getString("is_mms")))
+			if(Boolean.parseBoolean(json.getString("is_mms")))
 				values.put("type", TYPE_MMS);
 
 			values.put("incoming", (Boolean.parseBoolean(json.getString("is_incoming")) ? 1 : 0));
@@ -255,72 +297,86 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			values.put("cost", Double.parseDouble(json.getString("price")));
 
 			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);
-		}
+			}
 
-		public Cursor get(long id) {
+		public Cursor get(long id)
+			{
 			return getReadableDatabase().query(TABLE_NAME, null, "_id=" + id, null, null, null, null);
-		}
+			}
 
 		/**
 		 * Returns a cursor over the Usage table.
 		 * 
 		 * @param isSearch
-		 *            Whether to include usage records obtained by a search, or (xor) those obtained through
-		 *            auto-updating.
+		 *            Whether to include usage records obtained by a search, or
+		 *            (xor) those obtained through auto-updating.
 		 * @param order
-		 *            The constant representing the field to order the cursor by.
+		 *            The constant representing the field to order the cursor
+		 *            by.
 		 * @param ascending
 		 *            Whether the order should be ascending or descending.
 		 */
-		public Cursor get(int order, boolean ascending) {
+		public Cursor get(int order, boolean ascending)
+			{
 			String orderBy = null;
-			switch (order) {
+			switch(order)
+				{
 				case ORDER_BY_DATE:
 					orderBy = "timestamp " + (ascending ? "asc" : "desc");
-			}
+				}
 			return getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, orderBy);
-		}
+			}
 
-		public long getTimestamp(Cursor c) {
+		public long getTimestamp(Cursor c)
+			{
 			return c.getLong(1);
-		}
+			}
 
-		public long getduration(Cursor c) {
+		public long getduration(Cursor c)
+			{
 			return c.getLong(2);
-		}
+			}
 
-		public int getType(Cursor c) {
+		public int getType(Cursor c)
+			{
 			return c.getInt(3);
-		}
+			}
 
-		public boolean isIncoming(Cursor c) {
+		public boolean isIncoming(Cursor c)
+			{
 			return c.getInt(4) == 1;
-		}
+			}
 
-		public String getContact(Cursor c) {
+		public String getContact(Cursor c)
+			{
 			return c.getString(5);
-		}
+			}
 
-		public double getCost(Cursor c) {
+		public double getCost(Cursor c)
+			{
 			return c.getDouble(6);
+			}
+
 		}
 
-	}
-
-	public class Topups {
+	public class Topups
+		{
 
 		private static final String TABLE_NAME = "topups";
 
-		public void update(JSONArray jsonArray, boolean b) throws JSONException {
+		public void update(JSONArray jsonArray, boolean b) throws JSONException
+			{
 			getWritableDatabase().delete(TABLE_NAME, null, null);
 
-			for (int i = 0; i < jsonArray.length(); i++) {
+			for(int i = 0; i < jsonArray.length(); i++)
+				{
 				JSONObject json = jsonArray.getJSONObject(i);
 				insert(json);
+				}
 			}
-		}
 
-		private void insert(JSONObject json) throws JSONException {
+		private void insert(JSONObject json) throws JSONException
+			{
 			ContentValues values = new ContentValues();
 
 			values.put("amount", Double.parseDouble(json.getString("amount")));
@@ -330,31 +386,83 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			values.put("status", json.getString("status"));
 
 			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);
-		}
+			}
 
-		public Cursor getAll() {
+		public Cursor getAll()
+			{
 			return getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
-		}
+			}
 
-		public double getAmount(Cursor c) {
+		public double getAmount(Cursor c)
+			{
 			return c.getDouble(1);
-		}
+			}
 
-		public String getMethod(Cursor c) {
+		public String getMethod(Cursor c)
+			{
 			return c.getString(2);
-		}
+			}
 
-		public long getExecutedOn(Cursor c) {
+		public long getExecutedOn(Cursor c)
+			{
 			return c.getLong(3);
-		}
+			}
 
-		public long getReceivedOn(Cursor c) {
+		public long getReceivedOn(Cursor c)
+			{
 			return c.getLong(4);
-		}
+			}
 
-		public String getStatus(Cursor c) {
+		public String getStatus(Cursor c)
+			{
 			return c.getString(5);
-		}
+			}
 
+		}
+	
+	public class Msisdns
+		{
+		private static final String TABLE_NAME = "msisdns";
+	
+		public void update(JSONArray jsonArray) throws JSONException
+			{
+			getWritableDatabase().delete(TABLE_NAME, null, null);
+			for(int i = 0; i < jsonArray.length(); i++)
+				{
+				String msisdn = jsonArray.getString(i);
+				insert(msisdn);
+				}
+			}
+	
+		private void insert(String msisdn) throws JSONException
+			{
+			ContentValues values = new ContentValues();
+			values.put("msisdn", msisdn);
+			getWritableDatabase().insert(TABLE_NAME, "timestamp", values);
+			}
+	
+		public Cursor getAll()
+			{
+			return getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
+			}
+	
+		public String getMsisdn(Cursor c)
+			{
+			return c.getString(1);
+			}
+		
+		public String getMsisdnList()
+			{
+			Cursor c = getReadableDatabase().query(TABLE_NAME, null, null, null, null, null, null);
+			String result;
+
+			if(c.moveToFirst())
+				result = c.getString(1);
+			else
+				result = "non";
+
+			c.close();
+			return result;
+			}
+		}
 	}
-}
