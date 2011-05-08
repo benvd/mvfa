@@ -17,6 +17,10 @@
 
 package be.benvd.mvforandroid;
 
+import java.io.IOException;
+
+import org.json.JSONException;
+
 import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
@@ -27,9 +31,13 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.PreferenceManager;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
+import android.util.Log;
 
-public class SettingsActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
+public class SettingsActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener, OnPreferenceClickListener
+	{
 
 	public static final String OPEN_APP = "0";
 	public static final String UPDATE_DATA = "1";
@@ -40,134 +48,206 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 	private Preference autoTopupsPreference;
 	private Preference updateFrequencyPreference;
 	private Preference widgetActionPreference;
+	private ListPreference selectMsisdnPreference;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState)
+		{
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.settings);
-
+		
 		findPreferences();
+		selectMsisdnPreference.setOnPreferenceClickListener(this);
+
 		updatePreferences();
-	}
+		}
 
 	@Override
-	protected void onResume() {
+	protected void onResume()
+		{
 		super.onResume();
 		getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-	}
+		}
 
 	@Override
-	protected void onPause() {
+	protected void onPause()
+		{
 		super.onPause();
 		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-	}
+		}
 
+	
 	@Override
-	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-		if (key.equals("auto_credit") || key.equals("auto_usage") || key.equals("auto_topups")) {
-			switch (getNumEnabledAutoUpdates(prefs)) {
-				case 0: {
-					// An auto update preference has changed, and as a result none of them are enabled anymore. This
+	public void onSharedPreferenceChanged(SharedPreferences prefs, String key)
+		{
+		if(key.equals("auto_credit") || key.equals("auto_usage") || key.equals("auto_topups"))
+			{
+			switch(getNumEnabledAutoUpdates(prefs))
+				{
+				case 0:
+					{
+					// An auto update preference has changed, and as a result
+					// none of them are enabled anymore. This
 					// means
-					// we don't need to auto update anything and we can stop the service.
+					// we don't need to auto update anything and we can stop the
+					// service.
 					stopService();
 					break;
-				}
-				case 1: {
-					// At this point, exactly one of the auto updates is enabled, so the possibility exists that it was
-					// enabled just now, and as such that the service is stopped and needs to be rescheduled. In other
-					// words, if the currently modified preference is enabled, it is also the *only* auto update
+					}
+				case 1:
+					{
+					// At this point, exactly one of the auto updates is
+					// enabled, so the possibility exists that it was
+					// enabled just now, and as such that the service is stopped
+					// and needs to be rescheduled. In other
+					// words, if the currently modified preference is enabled,
+					// it is also the *only* auto update
 					// preference
 					// that is enabled. Therefore the service has to be started.
-					if (prefs.getBoolean(key, false))
+					if(prefs.getBoolean(key, false))
 						startService();
 					break;
+					}
 				}
 			}
-		}
 
-		if (key.equals("auto_credit")) {
+		if(key.equals("auto_credit"))
+			{
 			updateCreditPreference(prefs);
-		} else if (key.equals("auto_usage")) {
+			}
+		else if(key.equals("auto_usage"))
+			{
 			updateUsagePreference(prefs);
-		} else if (key.equals("auto_topups")) {
+			}
+		else if(key.equals("auto_topups"))
+			{
 			updateTopupsPreference(prefs);
-		} else if (key.equals("update_frequency")) {
+			}
+		else if(key.equals("update_frequency"))
+			{
 			updateFrequencyPreference();
-			if (getNumEnabledAutoUpdates(prefs) != 0) {
+			if(getNumEnabledAutoUpdates(prefs) != 0)
+				{
 				stopService();
 				startService();
+				}
 			}
-		} else if (key.equals(WIDGET_ACTION)) {
+		else if(key.equals(WIDGET_ACTION))
+			{
 			updateWidgetActionPreference();
+			}
+		else if(key.equals("select_msisdn"))
+			{
+			updateSelectMsisdnPreference();
+			}
 		}
-	}
 
-	private void findPreferences() {
+	private void findPreferences()
+		{
 		autoCreditPreference = getPreferenceScreen().findPreference("auto_credit");
 		autoUsagePreference = getPreferenceScreen().findPreference("auto_usage");
 		autoTopupsPreference = getPreferenceScreen().findPreference("auto_topups");
 		updateFrequencyPreference = getPreferenceScreen().findPreference("update_frequency");
 		widgetActionPreference = getPreferenceScreen().findPreference(WIDGET_ACTION);
-	}
+		selectMsisdnPreference = (ListPreference) getPreferenceScreen().findPreference("select_msisdn");
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		String[] msisdns = new String[1];
+		msisdns[0] = prefs.getString("select_msisdn", "none");
+		selectMsisdnPreference.setEntries(msisdns);
+		selectMsisdnPreference.setEntryValues(msisdns);
+		}
 
-	private void updatePreferences() {
+	private void updatePreferences()
+		{
 		updateCreditPreference(getPreferenceScreen().getSharedPreferences());
 		updateUsagePreference(getPreferenceScreen().getSharedPreferences());
 		updateTopupsPreference(getPreferenceScreen().getSharedPreferences());
 		updateFrequencyPreference();
 		updateWidgetActionPreference();
-	}
+		updateSelectMsisdnPreference();
+		}
 
-	private int getNumEnabledAutoUpdates(SharedPreferences prefs) {
+	private int getNumEnabledAutoUpdates(SharedPreferences prefs)
+		{
 		int result = 0;
-		if (prefs.getBoolean("auto_credit", false))
+		if(prefs.getBoolean("auto_credit", false))
 			result++;
-		if (prefs.getBoolean("auto_usage", false))
+		if(prefs.getBoolean("auto_usage", false))
 			result++;
-		if (prefs.getBoolean("auto_topups", false))
+		if(prefs.getBoolean("auto_topups", false))
 			result++;
 		return result;
-	}
+		}
 
-	private void updateCreditPreference(SharedPreferences sharedPreferences) {
+	private void updateCreditPreference(SharedPreferences sharedPreferences)
+		{
 		boolean autoCredit = sharedPreferences.getBoolean("auto_credit", false);
-		autoCreditPreference.setSummary(autoCredit ? getString(R.string.settings_auto_credit_enabled)
-				: getString(R.string.settings_auto_credit_disabled));
-	}
+		autoCreditPreference.setSummary(autoCredit ? getString(R.string.settings_auto_credit_enabled) : getString(R.string.settings_auto_credit_disabled));
+		}
 
-	private void updateUsagePreference(SharedPreferences sharedPreferences) {
+	private void updateUsagePreference(SharedPreferences sharedPreferences)
+		{
 		boolean autoUsage = sharedPreferences.getBoolean("auto_usage", false);
-		autoUsagePreference.setSummary(autoUsage ? getString(R.string.settings_auto_usage_enabled)
-				: getString(R.string.settings_auto_usage_disabled));
-	}
+		autoUsagePreference.setSummary(autoUsage ? getString(R.string.settings_auto_usage_enabled) : getString(R.string.settings_auto_usage_disabled));
+		}
 
-	private void updateTopupsPreference(SharedPreferences sharedPreferences) {
+	private void updateTopupsPreference(SharedPreferences sharedPreferences)
+		{
 		boolean autoTopups = sharedPreferences.getBoolean("auto_topups", false);
-		autoTopupsPreference.setSummary(autoTopups ? getString(R.string.settings_auto_topups_enabled)
-				: getString(R.string.settings_auto_topups_disabled));
-	}
+		autoTopupsPreference.setSummary(autoTopups ? getString(R.string.settings_auto_topups_enabled) : getString(R.string.settings_auto_topups_disabled));
+		}
 
-	private void updateFrequencyPreference() {
-		updateFrequencyPreference.setSummary(getString(R.string.settings_frequency,
-				((ListPreference) updateFrequencyPreference).getEntry()));
-	}
+	private void updateFrequencyPreference()
+		{
+		updateFrequencyPreference.setSummary(getString(R.string.settings_frequency, ((ListPreference) updateFrequencyPreference).getEntry()));
+		}
 
-	private void updateWidgetActionPreference() {
-		widgetActionPreference.setSummary(getString(R.string.settings_widget_action,
-				((ListPreference) widgetActionPreference).getEntry()));
-	}
+	private void updateWidgetActionPreference()
+		{
+		widgetActionPreference.setSummary(getString(R.string.settings_widget_action, ((ListPreference) widgetActionPreference).getEntry()));
+		}
 
-	private void stopService() {
+	private void updateSelectMsisdnPreference()
+		{
+		selectMsisdnPreference.setSummary(getString(R.string.settings_select_msisdn, ((ListPreference) selectMsisdnPreference).getEntry()));
+		}
+	
+	private void stopService()
+		{
 		Intent stop = new Intent(this, MVDataService.class);
 		stop.setAction(MVDataService.STOP_SERVICE);
 		WakefulIntentService.sendWakefulWork(this, stop);
-	}
+		}
 
-	private void startService() {
+	private void startService()
+		{
 		Intent start = new Intent(this, MVDataService.class);
 		start.setAction(MVDataService.SCHEDULE_SERVICE);
 		WakefulIntentService.sendWakefulWork(this, start);
-	}
+		}
 
-}
+	@Override
+	public boolean onPreferenceClick(Preference preference)
+		{
+		startService();
+		MVDataService service = MVDataService.getInstance();
+		String[] msisdns;
+		try
+			{
+			msisdns = service.getMsisdnList();
+			((ListPreference) preference).setEntries(msisdns);
+			((ListPreference) preference).setEntryValues(msisdns);
+			return true;
+			}
+		catch(JSONException e)
+			{
+			Log.e(MVDataService.class.getSimpleName(), "Exception in onPreferenceClick", e);
+			}
+		catch(IOException e)
+			{
+			Log.e(MVDataService.class.getSimpleName(), "Exception in onPreferenceClick", e);
+			}
+		return false;
+		}
+	
+	}

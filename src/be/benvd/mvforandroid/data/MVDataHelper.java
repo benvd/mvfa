@@ -23,11 +23,15 @@ import java.io.InputStreamReader;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-public class MVDataHelper {
+import android.util.Log;
+
+public class MVDataHelper
+	{
 
 	public static final String PRICE_PLAN_TOPUP_AMOUNT = "price_plan_topup_amount";
 	public static final String PRICE_PLAN_DATA_AMOUNT = "price_plan_data_amount";
@@ -38,29 +42,43 @@ public class MVDataHelper {
 	 * Returns the GET response of the given url.
 	 * 
 	 * @throws IOException
-	 * @return The response of the given URL. If no response was found, null is returned.
+	 * @return The response of the given URL. If no response was found, null is
+	 *         returned.
 	 */
-	public static String getResponse(String username, String password, String url) throws IOException {
-		DefaultHttpClient httpclient = new DefaultHttpClient();
-		httpclient.getCredentialsProvider().setCredentials(new AuthScope(null, -1),
-				new UsernamePasswordCredentials(username + ":" + password));
+	public static String getResponse(String username, String password, String url) throws IOException
+		{
+/*		DefaultHttpClient httpclient = new DefaultHttpClient();
+		httpclient.getCredentialsProvider().setCredentials(new AuthScope(null, -1), new UsernamePasswordCredentials(username + ":" + password));
 		HttpGet httpget = new HttpGet(url);
 		HttpResponse response = httpclient.execute(httpget);
-
-		if (response.getEntity() != null) {
+*/
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+		Credentials creds = new UsernamePasswordCredentials(username, password);
+		httpclient.getCredentialsProvider().setCredentials(new AuthScope(null, -1), creds);
+				
+		String auth = android.util.Base64.encodeToString((username + ":" + password).getBytes("UTF-8"), 
+				android.util.Base64.NO_WRAP);
+		
+		HttpGet httpget = new HttpGet(url);
+		httpget.addHeader("Authorization", "Basic "+ auth);
+		HttpResponse response = httpclient.execute(httpget);
+		
+		if(response.getEntity() != null)
+			{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 			StringBuilder sb = new StringBuilder();
 
 			String line = null;
-			while ((line = reader.readLine()) != null) {
+			while((line = reader.readLine()) != null)
+				{
 				sb.append(line);
-			}
+				}
 			reader.close();
-
+			Log.v(MVDataHelper.class.getSimpleName(),"Response:"+sb.toString());
 			return sb.toString();
-		}
+			}
 
 		return null;
-	}
+		}
 
-}
+	}

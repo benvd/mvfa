@@ -43,7 +43,8 @@ import android.view.View;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 
-class Switcher extends FrameLayout {
+class Switcher extends FrameLayout
+	{
 	private static final int MAJOR_MOVE = 60;
 	private static final int ANIM_DURATION = 1000;
 
@@ -58,28 +59,38 @@ class Switcher extends FrameLayout {
 	private TranslateAnimation inRight;
 	private TranslateAnimation outRight;
 
-	public Switcher(Context context, AttributeSet attrs) {
+	public Switcher(Context context, AttributeSet attrs)
+		{
 		super(context, attrs);
 		mCurrentView = 0;
-		mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-				int dx = (int) (e2.getX() - e1.getX());
-				if (Math.abs(dx) > MAJOR_MOVE && Math.abs(velocityX) > Math.abs(velocityY)) {
-					if (velocityX > 0) {
-						moveRight();
-					} else {
-						moveLeft();
+		mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener()
+			{
+				public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
+					{
+					int dx = (int) (e2.getX() - e1.getX());
+					if(Math.abs(dx) > MAJOR_MOVE && Math.abs(velocityX) > Math.abs(velocityY))
+						{
+						if(velocityX > 0)
+							{
+							moveRight();
+							}
+						else
+							{
+							moveLeft();
+							}
+						return true;
+						}
+					else
+						{
+						return false;
+						}
 					}
-					return true;
-				} else {
-					return false;
-				}
-			}
-		});
-	}
+			});
+		}
 
 	@Override
-	public void onSizeChanged(int w, int h, int oldW, int oldH) {
+	public void onSizeChanged(int w, int h, int oldW, int oldH)
+		{
 		mWidth = w;
 		inLeft = new TranslateAnimation(mWidth, 0, 0, 0);
 		outLeft = new TranslateAnimation(0, -mWidth, 0, 0);
@@ -91,83 +102,108 @@ class Switcher extends FrameLayout {
 		inRight.setDuration(ANIM_DURATION);
 		outRight.setDuration(ANIM_DURATION);
 
-	}
+		}
 
-	protected void onFinishInflate() {
+	protected void onFinishInflate()
+		{
 		int count = getChildCount();
 		children = new View[count];
-		for (int i = 0; i < count; ++i) {
+		for(int i = 0; i < count; ++i)
+			{
 			children[i] = getChildAt(i);
-			if (i != mCurrentView) {
+			if(i != mCurrentView)
+				{
 				children[i].setVisibility(View.GONE);
+				}
 			}
 		}
-	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
+	public boolean onTouchEvent(MotionEvent event)
+		{
 		mGestureDetector.onTouchEvent(event);
 		return true;
-	}
+		}
 
 	@Override
-	public boolean onInterceptTouchEvent(MotionEvent event) {
+	public boolean onInterceptTouchEvent(MotionEvent event)
+		{
 		return mGestureDetector.onTouchEvent(event);
-	}
+		}
 
-	void moveLeft() {
-		try {
-			if (this.getParent().getParent() instanceof my.android.widget.TabHost) {
-				my.android.widget.TabHost MyTabHost = ((my.android.widget.TabHost) Switcher.this.getParent()
-						.getParent());
-				if (mCurrentView < MyTabHost.getTabWidget().getTabCount() - 1) {
+	void moveLeft()
+		{
+		try
+			{
+			if(this.getParent().getParent() instanceof my.android.widget.TabHost)
+				{
+				my.android.widget.TabHost MyTabHost = ((my.android.widget.TabHost) Switcher.this.getParent().getParent());
+				if(mCurrentView < MyTabHost.getTabWidget().getTabCount() - 1)
+					{
 					MyTabHost.setCurrentTab(mCurrentView + 1);
 					// mCurrentView++;
+					}
 				}
-			} else {
-				if (mCurrentView < children.length - 1 /* && mPreviousMove != LEFT */) {
+			else
+				{
+				if(mCurrentView < children.length - 1 /*
+													 * && mPreviousMove != LEFT
+													 */)
+					{
 					children[mCurrentView + 1].setVisibility(View.VISIBLE);
 					children[mCurrentView + 1].startAnimation(inLeft);
 					children[mCurrentView].startAnimation(outLeft);
 					children[mCurrentView].setVisibility(View.GONE);
 
 					mCurrentView++;
+					}
 				}
 			}
-		} catch (Exception e) {
+		catch(Exception e)
+			{
+			}
 		}
-	}
 
-	void moveRight() {
-		try {
+	void moveRight()
+		{
+		try
+			{
 			// Switch the tab on the Parent TabHost
-			if (this.getParent().getParent() instanceof my.android.widget.TabHost) {
-				my.android.widget.TabHost MyTabHost = ((my.android.widget.TabHost) Switcher.this.getParent()
-						.getParent());
-				if (mCurrentView > 0) {
+			if(this.getParent().getParent() instanceof my.android.widget.TabHost)
+				{
+				my.android.widget.TabHost MyTabHost = ((my.android.widget.TabHost) Switcher.this.getParent().getParent());
+				if(mCurrentView > 0)
+					{
 					MyTabHost.setCurrentTab(mCurrentView - 1);
 					// mCurrentView--;
+					}
 				}
-			} else {
-				if (mCurrentView > 0 /* && mPreviousMove != RIGHT */) {
+			else
+				{
+				if(mCurrentView > 0 /* && mPreviousMove != RIGHT */)
+					{
 					children[mCurrentView - 1].setVisibility(View.VISIBLE);
 					children[mCurrentView - 1].startAnimation(inRight);
 					children[mCurrentView].startAnimation(outRight);
 					children[mCurrentView].setVisibility(View.GONE);
 
 					mCurrentView--;
+					}
 				}
 			}
-		} catch (Exception e) {
+		catch(Exception e)
+			{
+			}
 		}
-	}
 
-	public int getCurrentIndex() {
+	public int getCurrentIndex()
+		{
 		return mCurrentView;
-	}
+		}
 
 	// Added so the TabHost tell us what the current tab is...
-	public void setCurrentIndex(int index) {
+	public void setCurrentIndex(int index)
+		{
 		mCurrentView = index;
+		}
 	}
-}

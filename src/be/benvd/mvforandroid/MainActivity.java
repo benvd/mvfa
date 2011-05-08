@@ -48,25 +48,28 @@ import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-public class MainActivity extends TabActivity {
+public class MainActivity extends TabActivity
+	{
 
 	private static final String FIRST_TIME = "be.benvd.mvforandroid.FirstTime";
 	private SharedPreferences prefs;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState)
+		{
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.main);
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		if (prefs.getBoolean(FIRST_TIME, true))
+		if(prefs.getBoolean(FIRST_TIME, true))
 			firstTimeInit();
 
 		setupTabHost();
-	}
+		}
 
-	private void firstTimeInit() {
+	private void firstTimeInit()
+		{
 		Builder b = new Builder(this);
 		b.setTitle(getString(R.string.login_title));
 		View view = ((LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.login_window, null);
@@ -75,45 +78,56 @@ public class MainActivity extends TabActivity {
 		final EditText password = (EditText) view.findViewById(R.id.password);
 
 		b.setView(view);
-		b.setPositiveButton(getString(android.R.string.ok), new OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				saveCredentials(username.getText().toString(), password.getText().toString());
+		b.setPositiveButton(getString(android.R.string.ok), new OnClickListener()
+			{
+				@Override
+				public void onClick(DialogInterface dialog, int which)
+					{
+					saveCredentials(username.getText().toString(), password.getText().toString());
 
-				Intent i = new Intent(MainActivity.this, MVDataService.class);
-				i.setAction(MVDataService.SCHEDULE_SERVICE);
-				WakefulIntentService.sendWakefulWork(MainActivity.this, i);
+					Intent i = new Intent(MainActivity.this, MVDataService.class);
+					i.setAction(MVDataService.SCHEDULE_SERVICE);
+					WakefulIntentService.sendWakefulWork(MainActivity.this, i);
 
-				prefs.edit().putBoolean(FIRST_TIME, false).commit();
+					prefs.edit().putBoolean(FIRST_TIME, false).commit();
 
-				// Should have credentials now, let's force a refresh of the credits overview. We can't just broadcast
-				// to the MVDataService, since we want visual confirmation in CreditsActivity that the update is in
-				// progress, so we need to go through it.
-				sendBroadcast(new Intent(CreditActivity.ACTION_REFRESH));
-			}
+					// Should have credentials now, let's force a
+					// refresh of the credits overview. We can't just
+					// broadcast
+					// to the MVDataService, since we want visual
+					// confirmation in CreditsActivity that the update
+					// is in
+					// progress, so we need to go through it.
+					sendBroadcast(new Intent(CreditActivity.ACTION_REFRESH));
+					}
 
-			private void saveCredentials(String username, String password) {
-				prefs.edit().putString("username", username).putString("password", password).commit();
-			}
-		});
+				private void saveCredentials(String username, String password)
+					{
+					prefs.edit().putString("username", username).putString("password", password).commit();
+					}
+			});
 		b.setCancelable(false);
 		b.create().show();
-	}
+		}
 
 	@Override
-	protected void onDestroy() {
+	protected void onDestroy()
+		{
 		super.onDestroy();
-	}
+		}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(Menu menu)
+		{
 		new MenuInflater(this).inflate(R.menu.menu, menu);
 		return super.onCreateOptionsMenu(menu);
-	}
+		}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
+	public boolean onOptionsItemSelected(MenuItem item)
+		{
+		switch(item.getItemId())
+			{
 			case R.id.settings:
 				Intent intent = new Intent(this, SettingsActivity.class);
 				startActivity(intent);
@@ -121,12 +135,13 @@ public class MainActivity extends TabActivity {
 			case R.id.about:
 				showAboutDialog();
 				return true;
-		}
+			}
 
 		return false;
-	}
+		}
 
-	private void showAboutDialog() {
+	private void showAboutDialog()
+		{
 		Builder builder = new Builder(this);
 		builder.setIcon(android.R.drawable.ic_dialog_info);
 		builder.setTitle(getString(R.string.about));
@@ -135,9 +150,10 @@ public class MainActivity extends TabActivity {
 		AlertDialog dialog = builder.create();
 		dialog.show();
 		allowClickableLinks(dialog);
-	}
+		}
 
-	private CharSequence getAboutMessage() {
+	private CharSequence getAboutMessage()
+		{
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(getString(R.string.app_name));
 		stringBuilder.append(" ");
@@ -151,29 +167,34 @@ public class MainActivity extends TabActivity {
 
 		int twitterStart = stringBuilder.toString().indexOf("@benvandaele");
 		int twitterEnd = twitterStart + "@benvandaele".length();
-		message.setSpan(new URLSpan("http://twitter.com/benvandaele"), twitterStart, twitterEnd,
-				Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		message.setSpan(new URLSpan("http://twitter.com/benvandaele"), twitterStart, twitterEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 		return message;
-	}
+		}
 
-	private String getVersionName() {
-		try {
+	private String getVersionName()
+		{
+		try
+			{
 			ComponentName componentName = new ComponentName(this, MainActivity.class);
 			PackageInfo info = getPackageManager().getPackageInfo(componentName.getPackageName(), 0);
 			return info.versionName;
-		} catch (NameNotFoundException e) {
+			}
+		catch(NameNotFoundException e)
+			{
 			// Won't happen, versionName is present in the manifest!
 			return "";
+			}
 		}
-	}
 
-	private void allowClickableLinks(AlertDialog dialog) {
+	private void allowClickableLinks(AlertDialog dialog)
+		{
 		TextView message = (TextView) dialog.findViewById(android.R.id.message);
 		message.setMovementMethod(LinkMovementMethod.getInstance());
-	}
+		}
 
-	private void setupTabHost() {
+	private void setupTabHost()
+		{
 		TabHost tabHost = getTabHost();
 		TabHost.TabSpec spec;
 		Intent intent;
@@ -194,19 +215,22 @@ public class MainActivity extends TabActivity {
 		spec = tabHost.newTabSpec("topups").setIndicator(tabView).setContent(intent);
 		tabHost.addTab(spec);
 
-		tabHost.setOnTabChangedListener(new OnTabChangeListener() {
-			@Override
-			public void onTabChanged(String tabId) {
-				MainActivity.this.setProgressBarIndeterminateVisibility(false);
-			}
-		});
-	}
+		tabHost.setOnTabChangedListener(new OnTabChangeListener()
+			{
+				@Override
+				public void onTabChanged(String tabId)
+					{
+					MainActivity.this.setProgressBarIndeterminateVisibility(false);
+					}
+			});
+		}
 
-	private View getTabView(int stringId) {
+	private View getTabView(int stringId)
+		{
 		View view = getLayoutInflater().inflate(R.layout.tab_view, null, false);
 		TextView text = (TextView) view.findViewById(R.id.tab_text);
 		text.setText(stringId);
 		return view;
-	}
+		}
 
-}
+	}

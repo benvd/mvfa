@@ -37,6 +37,10 @@
 	<string
 		name="settings_auto_topups_disabled">Les infos concernant les recharges ne seront pas mises à jour automatiquement.</string>
 	<string
+		name="select_msisdn">Sélectionner le numéro</string>
+	<string
+		name="settings_select_msisdn">Le numéro %s sera utilisé.</string>
+	<string
 		name="widget_action">Action du widget</string>
 	<string
 		name="settings_widget_action">%s lorsque le widget est tapé.</string>

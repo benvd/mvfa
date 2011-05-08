@@ -34,58 +34,69 @@ import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-public class WidgetProvider extends AppWidgetProvider {
+public class WidgetProvider extends AppWidgetProvider
+	{
 
 	public static final String ON_WIDGET_CLICK = "be.benvd.mvforandroid.onWidgetClick";
 
 	@Override
-	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
+		{
 		int amount = appWidgetIds.length;
 
-		for (int i = 0; i < amount; i++) {
+		for(int i = 0; i < amount; i++)
+			{
 			int appWidgetId = appWidgetIds[i];
 
 			appWidgetManager.updateAppWidget(appWidgetId, getViews(context));
+			}
 		}
-	}
 
 	@Override
-	public void onReceive(Context context, Intent intent) {
+	public void onReceive(Context context, Intent intent)
+		{
 		super.onReceive(context, intent);
-		if (intent.getAction().equals(ON_WIDGET_CLICK)) {
+		if(intent.getAction().equals(ON_WIDGET_CLICK))
+			{
 			String widgetAction = getWidgetActionPreference(context);
-			if (widgetAction.equals(SettingsActivity.OPEN_APP))
+			if(widgetAction.equals(SettingsActivity.OPEN_APP))
 				openApp(context);
-			else if (widgetAction.equals(SettingsActivity.UPDATE_DATA))
+			else if(widgetAction.equals(SettingsActivity.UPDATE_DATA))
 				updateData(context);
-		} else if (intent.getAction().equals(MVDataService.CREDIT_UPDATED)) {
+			}
+		else if(intent.getAction().equals(MVDataService.CREDIT_UPDATED))
+			{
 			// Some magic to obtain a reference to the AppWidgetManager
 			ComponentName thisWidget = new ComponentName(context, WidgetProvider.class);
 			AppWidgetManager manager = AppWidgetManager.getInstance(context);
 
 			manager.updateAppWidget(thisWidget, getViews(context));
 
+			}
 		}
-	}
 
-	private void openApp(Context context) {
+	private void openApp(Context context)
+		{
 		Intent intent = new Intent(context, MainActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(intent);
-	}
+		}
 
-	private void updateData(Context context) {
+	private void updateData(Context context)
+		{
 		Intent i = new Intent(context, MVDataService.class);
 		i.setAction(MVDataService.UPDATE_CREDIT);
 		WakefulIntentService.sendWakefulWork(context, i);
-	}
+		}
 
-	private String getWidgetActionPreference(Context context) {
+	private String getWidgetActionPreference(Context context)
+		{
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		return prefs.getString(SettingsActivity.WIDGET_ACTION, SettingsActivity.UPDATE_DATA);
-	}
+		}
 
-	private RemoteViews getViews(Context context) {
+	private RemoteViews getViews(Context context)
+		{
 		RemoteViews views = null;
 		views = new RemoteViews(context.getPackageName(), R.layout.widget);
 
@@ -95,9 +106,10 @@ public class WidgetProvider extends AppWidgetProvider {
 
 		updateViewContent(context, views);
 		return views;
-	}
+		}
 
-	public void updateViewContent(Context context, RemoteViews views) {
+	public void updateViewContent(Context context, RemoteViews views)
+		{
 		DatabaseHelper helper = new DatabaseHelper(context);
 
 		views.setTextViewText(R.id.credit_text, helper.credit.getRemainingCredit() + " €");
@@ -105,5 +117,5 @@ public class WidgetProvider extends AppWidgetProvider {
 		views.setTextViewText(R.id.data_text, (helper.credit.getRemainingData() / (1024 * 1024)) + " MB");
 
 		helper.close();
+		}
 	}
-}

@@ -37,6 +37,10 @@
 	<string
 		name="settings_auto_topups_disabled">Top-up info will not be automatically updated.</string>
 	<string
+		name="select_msisdn">Select number</string>
+	<string
+		name="settings_select_msisdn">Number %s will be used.</string>
+	<string
 		name="widget_action">Widget tap action</string>
 	<string
 		name="settings_widget_action">%s when the widget is tapped.</string>

@@ -41,31 +41,36 @@ import be.benvd.mvforandroid.data.MVDataService;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 
-public class TopupsActivity extends Activity {
+public class TopupsActivity extends Activity
+	{
 
 	public DatabaseHelper helper;
 	private Cursor model;
 
-	private BroadcastReceiver updatedReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			model.requery();
-			TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
-		}
-	};
+	private BroadcastReceiver updatedReceiver = new BroadcastReceiver()
+		{
+			@Override
+			public void onReceive(Context context, Intent intent)
+				{
+				model.requery();
+				TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
+				}
+		};
 
-	private BroadcastReceiver exceptionReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			Exception e = (Exception) intent.getSerializableExtra(MVDataService.EXCEPTION);
-			Toast.makeText(context, getString(R.string.exception_message, e == null ? "null" : e.getClass().getName()),
-					Toast.LENGTH_LONG).show();
-			TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
-		}
-	};
+	private BroadcastReceiver exceptionReceiver = new BroadcastReceiver()
+		{
+			@Override
+			public void onReceive(Context context, Intent intent)
+				{
+				Exception e = (Exception) intent.getSerializableExtra(MVDataService.EXCEPTION);
+				Toast.makeText(context, getString(R.string.exception_message, e == null ? "null" : e.getClass().getName()), Toast.LENGTH_LONG).show();
+				TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(false);
+				}
+		};
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState)
+		{
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.topups);
@@ -74,90 +79,104 @@ public class TopupsActivity extends Activity {
 		model = helper.topups.getAll();
 
 		updateView();
-	}
+		}
 
-	private void updateView() {
+	private void updateView()
+		{
 		Button updateButton = (Button) findViewById(R.id.update_button);
-		updateButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(true);
-				Intent i = new Intent(TopupsActivity.this, MVDataService.class);
-				i.setAction(MVDataService.UPDATE_TOPUPS);
-				WakefulIntentService.sendWakefulWork(TopupsActivity.this, i);
-			}
-		});
+		updateButton.setOnClickListener(new OnClickListener()
+			{
+				@Override
+				public void onClick(View v)
+					{
+					TopupsActivity.this.getParent().setProgressBarIndeterminateVisibility(true);
+					Intent i = new Intent(TopupsActivity.this, MVDataService.class);
+					i.setAction(MVDataService.UPDATE_TOPUPS);
+					WakefulIntentService.sendWakefulWork(TopupsActivity.this, i);
+					}
+			});
 
 		ListView topupsList = (ListView) findViewById(R.id.topups_list);
 		topupsList.setAdapter(new TopupsAdapter(this, model));
 		topupsList.setFocusable(false);
-	}
+		}
 
 	@Override
-	protected void onResume() {
+	protected void onResume()
+		{
 		super.onResume();
 		registerReceiver(updatedReceiver, new IntentFilter(MVDataService.TOPUPS_UPDATED));
 		registerReceiver(exceptionReceiver, new IntentFilter(MVDataService.EXCEPTION));
-	}
+		}
 
 	@Override
-	protected void onPause() {
+	protected void onPause()
+		{
 		super.onPause();
 		unregisterReceiver(updatedReceiver);
 		unregisterReceiver(exceptionReceiver);
-	}
+		}
 
 	@Override
-	protected void onDestroy() {
+	protected void onDestroy()
+		{
 		super.onDestroy();
 		helper.close();
-	}
+		}
 
 	private static SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
 
-	static class TopupsHolder {
+	static class TopupsHolder
+		{
 		private TextView amount = null, method = null, date = null;
 
-		TopupsHolder(View listItem) {
+		TopupsHolder(View listItem)
+			{
 			amount = (TextView) listItem.findViewById(R.id.topup_amount);
 			method = (TextView) listItem.findViewById(R.id.topup_method);
 			date = (TextView) listItem.findViewById(R.id.topup_date);
-		}
+			}
 
-		public void populateFrom(Cursor c, DatabaseHelper helper) {
+		public void populateFrom(Cursor c, DatabaseHelper helper)
+			{
 			amount.setText((int) helper.topups.getAmount(c) + "€");
 			method.setText(helper.topups.getMethod(c));
 			date.setText(formatDate.format(new Date(helper.topups.getExecutedOn(c))));
+			}
+
 		}
 
-	}
+	class TopupsAdapter extends CursorAdapter
+		{
 
-	class TopupsAdapter extends CursorAdapter {
-
-		public TopupsAdapter(Context context, Cursor c) {
+		public TopupsAdapter(Context context, Cursor c)
+			{
 			super(context, c);
-		}
+			}
 
 		@Override
-		public void bindView(View view, Context context, Cursor cursor) {
+		public void bindView(View view, Context context, Cursor cursor)
+			{
 			TopupsHolder holder = (TopupsHolder) view.getTag();
 			holder.populateFrom(cursor, helper);
-		}
+			}
 
 		@Override
-		public View newView(Context context, Cursor cursor, ViewGroup parent) {
+		public View newView(Context context, Cursor cursor, ViewGroup parent)
+			{
 			LayoutInflater inflater = getLayoutInflater();
 			View listItem = inflater.inflate(R.layout.topups_list_item, parent, false);
 			TopupsHolder holder = new TopupsHolder(listItem);
 			listItem.setTag(holder);
 			return listItem;
-		}
+			}
 
 		@Override
-		public boolean isEnabled(int position) {
+		public boolean isEnabled(int position)
+			{
 			return false;
+			}
+
 		}
 
 	}
-
-}
